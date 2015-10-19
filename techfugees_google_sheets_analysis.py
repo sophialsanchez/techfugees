@@ -1,8 +1,8 @@
 # NOTES: If you want to run this locally, you will need to install gspread
 # https://github.com/burnash/gspread
 # If you already have pip, it's as easy as "pip install gspread" on the command line
-# Also, the json with all the fun Google authorization passwords you need
-# are not shared here.
+# Also, the json file with all the fun Google authorization passwords you need
+# is not shared in this repo.
 
 import json
 import gspread
