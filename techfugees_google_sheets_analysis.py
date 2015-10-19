@@ -15,18 +15,22 @@ credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['
 data = gspread.authorize(credentials)
 wks = data.open("GITOC Migrant Leg Prices Database 1 October 2015.xlsx").sheet1
 
-def findCountryPath(startCountry, endCountry):
+def listAllCountryPaths(startCountry, endCountry):
 	paths = findCountryPathRecursion(startCountry, endCountry, 0)
 
 	if len(paths) == 0:
 		print("We're sorry! There are no matching routes in our database for a trip from %s to %s." % (startCountry, endCountry))
 	elif len(paths) == 1:
 		print("There is 1 trip in our database from %s to %s. The path is:" % (startCountry, endCountry))
-		print(path)
+		print(path[0::2]),
+		price = sum(path[1::2])
+		print("Trip price: %d" % price)
 	else:
 		print("There are %d trips in our database from %s to %s. The paths are:" % (len(paths), startCountry, endCountry))
 		for path in paths:
-			print(path)
+			print(path[0::2]),
+			price = sum(list(map(int, path[1::2])))
+			print("Trip price: %d" % price)
 
 def findCountryPathRecursion(startCountry, endCountry, matches, path = []):
 	path = path + [startCountry]
@@ -42,14 +46,15 @@ def findCountryPathRecursion(startCountry, endCountry, matches, path = []):
 	for index in indices:
 		nextCountry = wks.cell(index + 1, 2).value # looks at the 'End' column for that row
 		if nextCountry not in path:
-			newpaths = findCountryPathRecursion(nextCountry, endCountry, matches, path)
+			price = wks.cell(index + 1, 3).value 
+			newpaths = findCountryPathRecursion(nextCountry, endCountry, matches, path + [price])
 			for newpath in newpaths:
 				paths.append(newpath)
 	return paths
 
 
 
-findCountryPath('Niger', 'Libya')
+listAllCountryPaths('Niger', 'Italy')
 
 
 
