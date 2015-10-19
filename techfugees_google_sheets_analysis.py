@@ -1,7 +1,8 @@
 # NOTES: If you want to run this locally, you will need to install gspread
 # https://github.com/burnash/gspread
 # If you already have pip, it's as easy as "pip install gspread" on the command line
-
+# Also, the json with all the fun Google authorization passwords you need
+# are not shared here.
 
 import json
 import gspread
@@ -11,9 +12,7 @@ json_key = json.load(open('techfugees-41d6a19e279a.json'))
 scope = ['https://spreadsheets.google.com/feeds']
 
 credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'].encode(), scope)
-
 data = gspread.authorize(credentials)
-
 wks = data.open("GITOC Migrant Leg Prices Database 1 October 2015.xlsx").sheet1
 
 def findCountryPath(startCountry, endCountry):
