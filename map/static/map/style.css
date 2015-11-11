@@ -1,0 +1,9 @@
+p {
+	color: green;
+}
+
+h1, h2 {
+	text-align: center;
+}
+
+#map { height: 600px; width: 1000px;}

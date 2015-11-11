@@ -1,0 +1,230 @@
+{% load staticfiles %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'map/style.css' %}" />
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+<link rel="stylesheet" type="text/js" href="{% static 'map/main.js' %}" />
+
+<h1>Techfugees</h1>
+
+<div style="float:left;" id="map"></div>
+
+
+
+<script>
+var map = L.map('map').setView([41.505, 25.00], 3);
+
+L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    maxZoom: 18,
+    id: 'sophiasanchez.c3eddfe3',
+    accessToken: 'pk.eyJ1Ijoic29waGlhc2FuY2hleiIsImEiOiJjaWdrMjB5NzgwMDlidWpsenRjbzBqb3p2In0.46Rk8ZSkTEtq0cK3nAJmfQ'
+}).addTo(map);
+
+var latlngs = Array();
+var polylines = [];
+var polylineLayergroup = L.layerGroup();
+
+var currentlySelectedCountry = null;
+var currentTarget = null;
+var endCountries = {};
+
+d3.json("{% static 'map/ne-countries-50m.json' %}", function (json){
+	function style(feature) {
+		return {
+			fillColor: "#E3E3E3",
+			weight: 1,
+			opacity: 0.4,
+			color: 'white',
+			fillOpacity: 0.3
+		};
+	}
+	geojson = L.geoJson(json, {
+		onEachFeature: onEachFeature,
+		style : style
+	}).addTo(map);
+ 
+	function onEachFeature(feature, layer){
+		layer.on({
+			click : onCountryClick,
+			mouseover : onCountryHighLight,
+			mouseout : onCountryMouseOut
+		});
+	}
+});
+
+var currentlySelectedCountry = null;
+var currentTarget = null;
+var endCountries = {};
+
+/**
+ * Callback for when a country is highlighted. Will take care of the ui aspects, and it will call
+ * other callbacks after done.
+ * @param e
+ */
+function onCountryHighLight(e){
+	var layer = e.target;
+
+	if (e.target.feature.properties.name == currentlySelectedCountry) {
+		layer.setStyle({
+			weight: 2,
+			color: 'red',
+			dashArray: '',
+			fillOpacity: 0.7
+		});
+	}
+	else {
+		layer.setStyle({
+			weight: 2,
+			color: '#666',
+			dashArray: '',
+			fillOpacity: 0.7
+		});
+	}
+
+	if (!L.Browser.ie && !L.Browser.opera) {
+		layer.bringToFront();
+	}
+
+	var countryName = e.target.feature.properties.name;
+	var countryCode = e.target.feature.properties.iso_a2;
+}
+
+/**
+ * Callback for mouse out of the country border. Will take care of the ui aspects, and will call
+ * other callbacks after done.
+ * @param e the event
+ */
+function onCountryMouseOut(e){
+	geojson.resetStyle(e.target);
+	var countryName = e.target.feature.properties.name;
+	var countryCode = e.target.feature.properties.iso_a2;
+
+	if (currentTarget != null) {
+		var layer = currentTarget;
+
+		layer.setStyle({
+			weight: 2,
+			color: 'red',
+			dashArray: '',
+			fillOpacity: 0.7
+		});
+		if (!L.Browser.ie && !L.Browser.opera) {
+			layer.bringToFront();
+		}
+	}
+}
+ 
+/**
+ * Callback for when a country is clicked. Will take care of the ui aspects, and it will call
+ * other callbacks when done
+ * @param e
+ */
+function onCountryClick(e){
+//callback for clicking inside a polygon
+
+	polylineLayergroup.clearLayers();
+	polylneLayergroup = L.layerGroup();
+
+	if (e.target.feature.properties.name == currentlySelectedCountry) {
+		currentlySelectedCountry = null;
+		currentTarget = null;
+		geojson.resetStyle(e.target);
+	}
+	else {
+
+		// deselect old country - could also potentially just use resetStyle
+		if (currentTarget != null){
+			var layer = currentTarget;
+				layer.setStyle({
+					fillColor: "#E3E3E3",
+					weight: 1,
+					opacity: 0.4,
+					color: 'white',
+					fillOpacity: 0.3
+			});
+		}
+
+		// draw red border around selected country
+		currentlySelectedCountry = e.target.feature.properties.name;
+		currentTarget = e.target;
+		var layer = currentTarget;
+
+		layer.setStyle({
+			weight: 2,
+			color: 'red',
+			dashArray: '',
+			fillOpacity: 0.7
+		});
+
+		// grab the data for that start country
+		$.ajax({
+			type: 'GET',
+			url: '/map/query/' + currentlySelectedCountry,
+			async: false, // this is probably not the best way; use a callback function instead?
+			success: function(data) {
+       		 	endCountries = JSON.parse(data);
+    		},
+    		failure: function(data) { 
+        		alert('Got an error dude');
+    		}
+		});
+
+		// draw green border possible end countries
+		// this is also asynchronous - need to use a callback to fix double-click bug?
+		d3.json("{% static 'map/ne-countries-50m.json' %}", function (json){
+			data = json.features;
+			for (var i = 0; i < data.length; i++) {
+				if (data[i].properties.name in endCountries) {
+					coordinates = data[i].geometry.coordinates[0];
+
+					// for some reason, we need to reverse the coordinates
+					var reversed = coordinates.map(function reverse(item) {
+    					return Array.isArray(item) && Array.isArray(item[0]) 
+               			? item.map(reverse) 
+               			: item.reverse();
+						});
+
+					myPolygon = L.polygon(reversed);
+					latlngs.push(myPolygon);
+				}
+			}
+		});
+
+		for (var i = 0; i < latlngs.length; i++) {
+			latlngs[i].setStyle({
+				weight: 2,
+				color: 'green',
+				dashArray: '',
+				fillOpacity: 0.1
+				});
+			polylineLayergroup.addLayer(latlngs[i]);
+
+			};
+
+		polylineLayergroup.addTo(map);
+		if (!L.Browser.ie && !L.Browser.opera) {
+			layer.bringToFront();
+		}
+		latlngs = Array();
+	}
+}
+</script>
+
+
+
+
+<div style="float:left;"id="itinerary">
+<h2>Your Itinerary</h2>
+<ol>
+<li>Syria -> Greece: $250</li>
+<li>Greece -> Germany: $1000</li>
+<br>
+<p><b>Total: $1250</b></p>
+</ol>
+</div>
