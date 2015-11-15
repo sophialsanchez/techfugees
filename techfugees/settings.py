@@ -79,7 +79,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'techfugees_db',
-        'USER': 'sophia',
+        'USER': os.environ['USER'],
         'PASSWORD': 'wiinner24',
         'HOST': 'localhost',
         'PORT': '5432',

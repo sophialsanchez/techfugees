@@ -1,0 +1,6 @@
+# python cruft
+*.pyc
+
+# venv-related files
+/venv/
+/activate
