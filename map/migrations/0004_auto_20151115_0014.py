@@ -37,8 +37,8 @@ def load_prices(app, _schema_editor):
           via = row[19],
           source = row[20],
           comment = row[21]
-    )
-    trip.save()
+      )
+      trip.save()
 
 
 class Migration(migrations.Migration):

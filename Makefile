@@ -51,6 +51,9 @@ create_db: postgres
 drop_db: postgres
 	@ psql --dbname template1 --single-transaction --command 'DROP DATABASE IF EXISTS $(DB_NAME);'
 
+db_shell: postgres
+	psql $(DB_NAME)
+
 .PHONY: \
 	all \
 	create_db \
