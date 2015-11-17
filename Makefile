@@ -30,17 +30,17 @@ POSTGRES_URL = https://github.com/PostgresApp/PostgresApp/releases/download/$(PO
 
 # assumes a Mac OS X env, will fail miserably otherwise
 postgres: install_postgres
-	open -a postgres
+	@ psql -tAc 'SELECT 1' > /dev/null 2>&1 \
+		|| ($(MAKE) install_postgres && open -a postgres && sleep 3)
 
 # installs pgsql from http://postgresapp.com/
-install_postgres: install_postgres
-	@ if ! which psql > /dev/null 2>&1 ; then \
-	  cd /tmp; \
-	  wget $(POSTGRES_URL); \
-	  unzip $(POSTGRES_ARCHIVE_NAME); \
-	  sudo mv Postgres.app /Applications/; \
-	  echo -e "\nexport PATH=\"\$$PATH:/Applications/Postgres.app/Contents/Versions/$(POSTGRES_SHORT_VERSION)/bin\"\n" >> ~/.bash_profile; \
-	fi
+install_postgres:
+	@ [ -d /Applications/Postgres.app ] \
+		|| (cd /tmp \
+			&& wget $(POSTGRES_URL) \
+			&& unzip $(POSTGRES_ARCHIVE_NAME) \
+			&& sudo mv Postgres.app /Applications/ \
+			&& echo -e "\nexport PATH=\"\$$PATH:/Applications/Postgres.app/Contents/Versions/$(POSTGRES_SHORT_VERSION)/bin\"\n" >> ~/.bash_profile)
 
 DB_NAME = techfugees_db
 
