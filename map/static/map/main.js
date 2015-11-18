@@ -9,13 +9,25 @@ $(function() {
   }).addTo(map);
 
   var Map = {
-    self.countries = {};
+    this.countries = self.cacheCountries();
     highlightCountries: function(countryNames, highlightStyle, layer) {
       for (var countryName in countriesNames) {
         country = self.countries[countryName];
         country.highlight(highlightStyle, layer);
       }
-    }
+    };
+
+    cacheCountries: function() {
+      d3.json(COUNTRIES_DATA_JSON_URL, function (json){
+      data = json.features;
+      for (var i = 0; i < data.length; i++) {
+        name = data[i].properties.name;
+        coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
+        country = new Country(name, coordinates);
+        Map.countries[name] = country;
+      };
+      }
+    };
   }
 
   var Trip = {
