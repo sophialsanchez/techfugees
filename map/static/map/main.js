@@ -8,38 +8,37 @@ $(function() {
       accessToken: 'pk.eyJ1Ijoic29waGlhc2FuY2hleiIsImEiOiJjaWdrMjB5NzgwMDlidWpsenRjbzBqb3p2In0.46Rk8ZSkTEtq0cK3nAJmfQ'
   }).addTo(map);
 
-  var Map = {
-    this.countries = self.cacheCountries();
-
-    selectStartCountry: function(countryName) {
+  var Map = function() {
+    this.countries = this.cacheCountries();
+    this.selectStartCountry = function(countryName) {
       var layerGroup = L.layerGroup();
-      highlightCountries([countryName], ['red', 2, .7], layerGroup]);
+      highlightCountries([countryName], ['red', 2, .7], layerGroup);
       $.ajax({
         type: 'GET',
         url: '/map/query/' + countryName,
         success: function(reply) {makeEndCountriesGreen(reply, layerGroup)}
       });
-    }
+    };
 
-    makeEndCountriesGreen: function(reply, layerGroup) {
+    this.makeEndCountriesGreen = function(reply, layerGroup) {
         endCountries = JSON.parse(reply);
         highlightCountries(endCountries, ['green', 2, .1], layerGroup);
         layerGroup.addTo(map);
         if (!L.Browser.ie && !L.Browser.opera) {
           layerGroup.bringToFront();
         }
-    }
+    };
 
-    highlightCountries: function(countryNames, highlightStyle, layerGroup) {
+    this.highlightCountries = function(countryNames, highlightStyle, layerGroup) {
       for (var countryName in countriesNames) {
-        if countries.hasOwnProperty(countryName) {
+        if (this.countries.hasOwnProperty(countryName)) {
           country = this.countries[countryName];
           country.highlight(highlightStyle, layerGroup);
         }
       }
     };
 
-    cacheCountries: function() {
+    this.cacheCountries = function() {
       d3.json(COUNTRIES_DATA_JSON_URL, function (json){
         data = json.features;
         for (var i = 0; i < data.length; i++) {
@@ -48,29 +47,30 @@ $(function() {
           country = new Country(name, coordinates);
           this.countries[name] = country;
         }
-    }
+    })
+    };
   
-  style: function(feature) {
+    this.style = function(feature) {
       return {
         fillColor: "#E3E3E3",
         weight: 1,
         opacity: 0.4,
         color: 'white',
         fillOpacity: 0.3
-      };
-    }
+      }
+    };
+}
 
-  var Trip = {
-    drawTripLine: function(){};
-
+  var Trip = function() {
+    this.drawTripLine = function(){};
   }
 
   function Country (name, coordinates) {
     this.name = name;
     this.coordinates = coordinates;
-    this.selected = false,
+    this.selected = false;
 
-    highlight: function(color, weight, fillOpacity, layerGroup) {
+    this.highlight = function(color, weight, fillOpacity, layerGroup) {
       layerGroup.addLayer(self.coordinates);
       self.coordinates.setStyle({
         weight: weight,
@@ -81,6 +81,12 @@ $(function() {
     }
   }
 
+
+
+
+
+
+
   var currentlySelectedCountry = null;
   var currentTarget = null;
   var endCountries = {};
@@ -90,13 +96,6 @@ $(function() {
 
   // FIXME: cache the JSON, don't reload it every time
   d3.json(COUNTRIES_DATA_JSON_URL, function (json){
-    data = json.features;
-    for (var i = 0; i < data.length; i++) {
-      name = data[i].properties.name;
-      coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
-      country = new Country(name, coordinates);
-      Map.countries[name] = country;
-    };
 
     function style(feature) {
       return {
