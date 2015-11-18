@@ -8,6 +8,33 @@ $(function() {
       accessToken: 'pk.eyJ1Ijoic29waGlhc2FuY2hleiIsImEiOiJjaWdrMjB5NzgwMDlidWpsenRjbzBqb3p2In0.46Rk8ZSkTEtq0cK3nAJmfQ'
   }).addTo(map);
 
+  var Map = {
+
+  }
+
+  var Trip = {
+    
+  }
+
+  function Country (name, coordinates, centerpoint) {
+    this.name = name;
+    this.coordinates = coordinates;
+    this.centerpoint = centerpoint;
+    this.selected = false,
+
+    makeRed: function(){}
+    makeGreen: function(){}
+    setSelectedAsTrue: function(){
+      this.selected = true;
+    }
+    setSelectedAsFalse: function(){
+      this.selected = false;
+    }
+  }
+
+
+
+
   var currentlySelectedCountry = null;
   var currentTarget = null;
   var endCountries = {};
@@ -83,7 +110,6 @@ $(function() {
    * @param e
    */
   function onCountryClick(e){
-
     polylineLayergroup.clearLayers();
     polylneLayergroup = L.layerGroup();
 
