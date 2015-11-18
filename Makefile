@@ -18,7 +18,7 @@ venv: virtualenv
 	@ [ -d venv ] || virtualenv venv
 
 virtualenv:
-	@ which virtualenv > /dev/null 2>&1 || [[ "$$(type -t deactivate)" == 'function' ]] || pip install virtualenv
+	@ which virtualenv > /dev/null 2>&1 || [[ "$$(type -t deactivate)" == 'function' ]] || sudo pip install virtualenv
 
 freeze:
 	venv/bin/pip freeze > requirements.txt
