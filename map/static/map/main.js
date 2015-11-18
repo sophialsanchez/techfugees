@@ -13,7 +13,7 @@ $(function() {
   }
 
   var Trip = {
-    
+
   }
 
   function Country (name, coordinates, centerpoint) {
@@ -22,13 +22,14 @@ $(function() {
     this.centerpoint = centerpoint;
     this.selected = false,
 
-    makeRed: function(){}
-    makeGreen: function(){}
-    setSelectedAsTrue: function(){
-      this.selected = true;
-    }
-    setSelectedAsFalse: function(){
-      this.selected = false;
+    highlight: function(color, weight, fillOpacity, layerGroup) {
+      layerGroup.addLayer(self.coordinates)
+      return self.coordinates.setStyle({
+        weight: weight,
+        color: color,
+        dashArray: '',
+        fillOpacity: fillOpacity,
+      });
     }
   }
 
