@@ -51,9 +51,14 @@ $(function() {
 
   // FIXME: cache the JSON, don't reload it every time
   d3.json(COUNTRIES_DATA_JSON_URL, function (json){
-    country = new Country(name, coordinates);
-    Map.countries[name] = country;
-    
+    data = json.features;
+    for (var i = 0; i < data.length; i++) {
+      name = data[i].properties.name;
+      coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
+      country = new Country(name, coordinates);
+      Map.countries[name] = country;
+    };
+
     function style(feature) {
       return {
         fillColor: "#E3E3E3",
