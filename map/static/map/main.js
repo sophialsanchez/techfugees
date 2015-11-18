@@ -12,8 +12,10 @@ $(function() {
     this.countries = self.cacheCountries();
     highlightCountries: function(countryNames, highlightStyle, layer) {
       for (var countryName in countriesNames) {
-        country = self.countries[countryName];
-        country.highlight(highlightStyle, layer);
+        if countries.hasOwnProperty(countryName) {
+          country = this.countries[countryName];
+          country.highlight(highlightStyle, layer);
+        }
       }
     };
 
@@ -24,10 +26,10 @@ $(function() {
         name = data[i].properties.name;
         coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
         country = new Country(name, coordinates);
-        Map.countries[name] = country;
-      };
+        this.countries[name] = country;
       }
-    };
+      }
+    }
   }
 
   var Trip = {
