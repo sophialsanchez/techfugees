@@ -9,10 +9,16 @@ $(function() {
   }).addTo(map);
 
   var Map = {
-
+    highlightCountries: function(countryNames, highlightStyle, layer) {
+      for (var countryName in countriesNames) {
+        country = self.countries[countryName];
+        country.highlight(highlightStyle, layer);
+      }
+    }
   }
 
   var Trip = {
+    drawTripLine: function(){};
 
   }
 
@@ -23,8 +29,8 @@ $(function() {
     this.selected = false,
 
     highlight: function(color, weight, fillOpacity, layerGroup) {
-      layerGroup.addLayer(self.coordinates)
-      return self.coordinates.setStyle({
+      layerGroup.addLayer(self.coordinates);
+      self.coordinates.setStyle({
         weight: weight,
         color: color,
         dashArray: '',
