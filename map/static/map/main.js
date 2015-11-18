@@ -9,6 +9,7 @@ $(function() {
   }).addTo(map);
 
   var Map = {
+    self.countries = {};
     highlightCountries: function(countryNames, highlightStyle, layer) {
       for (var countryName in countriesNames) {
         country = self.countries[countryName];
@@ -22,10 +23,9 @@ $(function() {
 
   }
 
-  function Country (name, coordinates, centerpoint) {
+  function Country (name, coordinates) {
     this.name = name;
     this.coordinates = coordinates;
-    this.centerpoint = centerpoint;
     this.selected = false,
 
     highlight: function(color, weight, fillOpacity, layerGroup) {
@@ -51,6 +51,9 @@ $(function() {
 
   // FIXME: cache the JSON, don't reload it every time
   d3.json(COUNTRIES_DATA_JSON_URL, function (json){
+    country = new Country(name, coordinates);
+    Map.countries[name] = country;
+    
     function style(feature) {
       return {
         fillColor: "#E3E3E3",
