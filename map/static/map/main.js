@@ -10,27 +10,55 @@ $(function() {
 
   var Map = {
     this.countries = self.cacheCountries();
-    highlightCountries: function(countryNames, highlightStyle, layer) {
+
+    selectStartCountry: function(countryName) {
+      var layerGroup = L.layerGroup();
+      highlightCountries([countryName], ['red', 2, .7], layerGroup]);
+      $.ajax({
+        type: 'GET',
+        url: '/map/query/' + countryName,
+        success: function(reply) {makeEndCountriesGreen(reply, layerGroup)}
+      });
+    }
+
+    makeEndCountriesGreen: function(reply, layerGroup) {
+        endCountries = JSON.parse(reply);
+        highlightCountries(endCountries, ['green', 2, .1], layerGroup);
+        layerGroup.addTo(map);
+        if (!L.Browser.ie && !L.Browser.opera) {
+          layerGroup.bringToFront();
+        }
+    }
+
+    highlightCountries: function(countryNames, highlightStyle, layerGroup) {
       for (var countryName in countriesNames) {
         if countries.hasOwnProperty(countryName) {
           country = this.countries[countryName];
-          country.highlight(highlightStyle, layer);
+          country.highlight(highlightStyle, layerGroup);
         }
       }
     };
 
     cacheCountries: function() {
       d3.json(COUNTRIES_DATA_JSON_URL, function (json){
-      data = json.features;
-      for (var i = 0; i < data.length; i++) {
-        name = data[i].properties.name;
-        coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
-        country = new Country(name, coordinates);
-        this.countries[name] = country;
-      }
-      }
+        data = json.features;
+        for (var i = 0; i < data.length; i++) {
+          name = data[i].properties.name;
+          coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
+          country = new Country(name, coordinates);
+          this.countries[name] = country;
+        }
     }
-  }
+  
+  style: function(feature) {
+      return {
+        fillColor: "#E3E3E3",
+        weight: 1,
+        opacity: 0.4,
+        color: 'white',
+        fillOpacity: 0.3
+      };
+    }
 
   var Trip = {
     drawTripLine: function(){};
@@ -52,9 +80,6 @@ $(function() {
       });
     }
   }
-
-
-
 
   var currentlySelectedCountry = null;
   var currentTarget = null;
