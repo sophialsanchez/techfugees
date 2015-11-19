@@ -8,8 +8,24 @@ $(function() {
       accessToken: 'pk.eyJ1Ijoic29waGlhc2FuY2hleiIsImEiOiJjaWdrMjB5NzgwMDlidWpsenRjbzBqb3p2In0.46Rk8ZSkTEtq0cK3nAJmfQ'
   }).addTo(map);
 
-  var Map = function() {
-    this.countries = this.cacheCountries();
+  function Country (name, coordinates) {
+    this.name = name;
+    this.coordinates = coordinates;
+    this.selected = false;
+
+    this.highlight = function(color, weight, fillOpacity, layerGroup) {
+      layerGroup.addLayer(self.coordinates);
+      self.coordinates.setStyle({
+        weight: weight,
+        color: color,
+        dashArray: '',
+        fillOpacity: fillOpacity,
+      });
+    }
+  }
+
+  function Map() {
+
     this.selectStartCountry = function(countryName) {
       var layerGroup = L.layerGroup();
       highlightCountries([countryName], ['red', 2, .7], layerGroup);
@@ -40,6 +56,7 @@ $(function() {
 
     this.cacheCountries = function() {
       d3.json(COUNTRIES_DATA_JSON_URL, function (json){
+        this.countries = {};
         data = json.features;
         for (var i = 0; i < data.length; i++) {
           name = data[i].properties.name;
@@ -49,7 +66,9 @@ $(function() {
         }
     })
     };
-  
+
+    this.countries = this.cacheCountries();
+
     this.style = function(feature) {
       return {
         fillColor: "#E3E3E3",
@@ -59,33 +78,26 @@ $(function() {
         fillOpacity: 0.3
       }
     };
-}
+  }
 
-  var Trip = function() {
+  function Trip() {
     this.drawTripLine = function(){};
   }
 
-  function Country (name, coordinates) {
-    this.name = name;
-    this.coordinates = coordinates;
-    this.selected = false;
 
-    this.highlight = function(color, weight, fillOpacity, layerGroup) {
-      layerGroup.addLayer(self.coordinates);
-      self.coordinates.setStyle({
-        weight: weight,
-        color: color,
-        dashArray: '',
-        fillOpacity: fillOpacity,
+
+myMap = new Map();
+console.log(myMap.countries);
+
+
+function reverseCoordinates(coordinates) {
+    return coordinates.map(function reverse(item) {
+      return Array.isArray(item) && Array.isArray(item[0]) 
+        ? item.map(reverse) 
+        : item.reverse();
       });
-    }
-  }
-
-
-
-
-
-
+  } 
+/*
 
   var currentlySelectedCountry = null;
   var currentTarget = null;
@@ -120,11 +132,7 @@ $(function() {
     }
   });
 
-  /**
-   * Callback for when a country is highlighted. Will take care of the ui aspects, and it will call
-   * other callbacks after done.
-   * @param e
-   */
+
   function onCountryHighLight(e){
 
     if (e.target.feature.properties.name == currentlySelectedCountry) {
@@ -140,11 +148,7 @@ $(function() {
 
   }
 
-  /**
-   * Callback for mouse out of the country border. Will take care of the ui aspects, and will call
-   * other callbacks after done.
-   * @param e the event
-   */
+
   function onCountryMouseOut(e){
     geojson.resetStyle(e.target);
 
@@ -157,11 +161,7 @@ $(function() {
     }
   }
 
-  /**
-   * Callback for when a country is clicked. Will take care of the ui aspects, and it will call
-   * other callbacks when done
-   * @param e
-   */
+
   function onCountryClick(e){
     polylineLayergroup.clearLayers();
     polylneLayergroup = L.layerGroup();
@@ -241,7 +241,9 @@ $(function() {
         : item.reverse();
       });
   } 
+*/
 
 });
+
 
 
