@@ -64,15 +64,14 @@ $(function() {
           country = new Country(name, coordinates);
           countries[name] = country;
         }
-        myMap.setCountries(countries);
-    })
+        this.countries = countries;
+        // TODO remove that
+        console.log('populated');
+        console.log(this.countries);
+      })
     };
 
-    this.setCountries = function(countriesInfo) {
-      this.countries = countriesInfo;
-    };
-
-    this.countries = this.cacheCountries();
+    this.cacheCountries();
 
 
     this.style = function(feature) {
