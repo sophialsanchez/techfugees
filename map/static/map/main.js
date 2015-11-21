@@ -65,9 +65,6 @@ $(function() {
           countries[name] = country;
         }
         this.countries = countries;
-        // TODO remove that
-        console.log('populated');
-        console.log(this.countries);
       })
     };
 
@@ -92,7 +89,6 @@ $(function() {
 
 
 myMap = new Map();
-console.log(myMap.countries);
 
 
 function reverseCoordinates(coordinates) {
