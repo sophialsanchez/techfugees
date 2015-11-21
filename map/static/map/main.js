@@ -55,19 +55,25 @@ $(function() {
     };
 
     this.cacheCountries = function() {
+      var countries = {};
       d3.json(COUNTRIES_DATA_JSON_URL, function (json){
-        this.countries = {};
         data = json.features;
         for (var i = 0; i < data.length; i++) {
           name = data[i].properties.name;
           coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
           country = new Country(name, coordinates);
-          this.countries[name] = country;
+          countries[name] = country;
         }
+        myMap.setCountries(countries);
     })
     };
 
+    this.setCountries = function(countriesInfo) {
+      this.countries = countriesInfo;
+    };
+
     this.countries = this.cacheCountries();
+
 
     this.style = function(feature) {
       return {
@@ -97,6 +103,8 @@ function reverseCoordinates(coordinates) {
         : item.reverse();
       });
   } 
+
+
 /*
 
   var currentlySelectedCountry = null;
