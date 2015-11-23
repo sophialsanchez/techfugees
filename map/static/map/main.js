@@ -45,11 +45,12 @@ $(function() {
         }
     };
 
-    this.highlightCountries = function(countryNames, highlightStyle, layerGroup) {
-      for (var countryName in countriesNames) {
-        if (this.countries.hasOwnProperty(countryName)) {
-          country = this.countries[countryName];
-          country.highlight(highlightStyle, layerGroup);
+    highlightCountries = function(countryNames, highlightStyle) {
+      for (var i = 0; i < countryNames.length; i++) {
+        if (this.countries.hasOwnProperty(countryNames[i])) {
+          country = this.countries[countryNames[i]];
+          var layerGroup = L.layerGroup();
+          country.highlight(highlightStyle, highlightStyle[0], highlightStyle[1], highlightStyle[2], layerGroup);
         }
       }
     };
@@ -60,18 +61,25 @@ $(function() {
         data = json.features;
         for (var i = 0; i < data.length; i++) {
           name = data[i].properties.name;
-          coordinates = reverseCoordinates(data[i].geometry.coordinates[0]);
+          coordinates = data[i].geometry.coordinates[0];
           country = new Country(name, coordinates);
           countries[name] = country;
         }
         this.countries = countries;
-      })
-    };
+        geojson = L.geoJson(json, {
+            onEachFeature: onEachFeature,
+            style : style
+            }).addTo(map);
 
-    this.cacheCountries();
+      function onEachFeature(feature, layer){
+          layer.on({
+          mouseover : onCountryHighLight,
+        });
+        }
+    });
+    }
 
-
-    this.style = function(feature) {
+    style = function(feature) {
       return {
         fillColor: "#E3E3E3",
         weight: 1,
@@ -80,11 +88,27 @@ $(function() {
         fillOpacity: 0.3
       }
     };
+
+    this.cacheCountries();
+}
+
+function onCountryHighLight(e){
+  var name = e.target.feature.properties.name;
+  if (e.target.feature.properties.name == "change this to currentlySelectedCountry") {
+    highlightCountries([name], ['red', 2, .7])
   }
+  else {e.target.feature.properties.name in 
+    highlightCountries([name], ['#666', 2, .7])
+  }
+  if (!L.Browser.ie && !L.Browser.opera) {
+    e.target.bringToFront();
+  }
+}
 
   function Trip() {
     this.drawTripLine = function(){};
   }
+
 
 
 
@@ -99,6 +123,16 @@ function reverseCoordinates(coordinates) {
       });
   } 
 
+
+
+function changeCountryColor(layer, weight, color, fillOpacity) {
+    return layer.setStyle({
+      weight: weight,
+      color: color,
+      dashArray: '',
+      fillOpacity: fillOpacity,
+    });
+  }
 
 /*
 
