@@ -14,13 +14,15 @@ $(function() {
     this.selected = false;
 
     this.highlight = function(color, weight, fillOpacity, layerGroup) {
-      layerGroup.addLayer(self.coordinates);
-      self.coordinates.setStyle({
+      layerGroup.addLayer(this.coordinates);
+      myPolygon = L.polygon(reverseCoordinates(this.coordinates));
+      myPolygon.setStyle({
         weight: weight,
         color: color,
         dashArray: '',
         fillOpacity: fillOpacity,
       });
+      myPolygon.addTo(map);
     }
   }
 
@@ -50,7 +52,7 @@ $(function() {
         if (this.countries.hasOwnProperty(countryNames[i])) {
           country = this.countries[countryNames[i]];
           var layerGroup = L.layerGroup();
-          country.highlight(highlightStyle, highlightStyle[0], highlightStyle[1], highlightStyle[2], layerGroup);
+          country.highlight(highlightStyle[0], highlightStyle[1], highlightStyle[2], layerGroup);
         }
       }
     };
@@ -95,10 +97,10 @@ $(function() {
 function onCountryHighLight(e){
   var name = e.target.feature.properties.name;
   if (e.target.feature.properties.name == "change this to currentlySelectedCountry") {
-    highlightCountries([name], ['red', 2, .7])
+    highlightCountries([name], ['red', 2, .7]);
   }
-  else {e.target.feature.properties.name in 
-    highlightCountries([name], ['#666', 2, .7])
+  else {
+    highlightCountries([name], ['#666', 2, .2]);
   }
   if (!L.Browser.ie && !L.Browser.opera) {
     e.target.bringToFront();
