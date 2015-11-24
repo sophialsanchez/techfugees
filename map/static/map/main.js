@@ -1,6 +1,6 @@
 $(function() {
 
-  function Country (leafletMap, countryName, coordinates) {
+  function Country (leafletMap, countryName, coordinates, polygonType) {
     // for some reason, we need to reverse the coordinates
     var reverseCoordinates = function(coordinates) {
       return coordinates.map(function reverse(item) {
@@ -10,12 +10,28 @@ $(function() {
         });
     };
 
-    var polygon = L.polygon(coordinates);
+    var createPolygon = function() {
+      if (polygonType === "Polygon") {
+        return L.polygon(coordinates);
+      }
+      else {
+        return L.multiPolygon(coordinates);
+      }
+    }
+    
+    var polygon = createPolygon();
+
     this.state = null;
     this.name = countryName;
 
     this.reversePolygon = function() {
-      polygon = L.polygon(reverseCoordinates(coordinates), {clickable: false});
+      if (polygonType === "Polygon") {
+        polygon = L.polygon(reverseCoordinates(coordinates), {clickable: false});
+      }
+      else {
+        polygon = L.multiPolygon(reverseCoordinates(coordinates));
+      }
+
     }
 
     this.getPolygonCenter = function () {
@@ -198,8 +214,18 @@ $(function() {
         data = json.features;
         for (var i = 0; i < data.length; i++) {
           var countryName = data[i].properties.name;
-          var countryCoordinates = data[i].geometry.coordinates[0];
-          var country = new Country(leafletMap, countryName, countryCoordinates);
+          var polygonType = data[i].geometry.type;
+          // takes care of countries with several closed polygons, like Italy
+          var countryCoordinates = []
+          if (data[i].geometry.type === "MultiPolygon") {
+            for (var j = 0; j < data[i].geometry.coordinates.length; j++) {
+              countryCoordinates.push(data[i].geometry.coordinates[j]);
+            }
+          }
+          else {
+            countryCoordinates = data[i].geometry.coordinates[0];
+          }
+          var country = new Country(leafletMap, countryName, countryCoordinates, polygonType);
           countries[countryName] = country;
         }
 
