@@ -14,6 +14,10 @@ $(function() {
     this.state = null;
     this.name = countryName;
 
+    this.reversePolygon = function() {
+      polygon = L.polygon(reverseCoordinates(coordinates));
+    }
+
     var highlight = function(style) {
       polygon.setStyle($.extend({
         dashArray: ''
@@ -75,7 +79,6 @@ $(function() {
       for (var i = 0; i < countryNames.length; i++) {
         if (countryExists(countryNames[i])) {
           var country = countries[countryNames[i]];
-          console.log(callback);
           callback(country);
         }
       }
@@ -83,6 +86,10 @@ $(function() {
 
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
+
+      if (startCountry.name in currentEndCountries) {
+        // draw a line from start to end
+      }
 
       if (currentlySelectedCountry) {
         currentlySelectedCountry.removeHighlight();
@@ -123,6 +130,9 @@ $(function() {
 
       if (country.state === null) {
         country.highlightGrey();
+        if (!L.Browser.ie && !L.Browser.opera) {
+          e.target.bringToFront();
+        }
       }
     };
 
@@ -152,13 +162,6 @@ $(function() {
         }
 
         L.geoJson(json, {
-          onEachFeature: function(feature, layer) {
-            layer.on({
-              mouseover : onCountryHighLight,
-              mouseout : onCountryMouseOut,
-              click: onCountryClick
-            });
-          },
           style:  {
             fillColor: "#E3E3E3",
             weight: 1,
@@ -166,15 +169,25 @@ $(function() {
             color: 'white',
             fillOpacity: 0.3
           },
+          onEachFeature: function(feature, layer) {
+            countries[feature.properties.name].reversePolygon();
+            layer.on({
+              mouseover : onCountryHighLight,
+              mouseout : onCountryMouseOut,
+              click: onCountryClick
+            });
+          },
           onCountryMouseOut: onCountryMouseOut,
-          onCountryClick: onCountryClick
+          onCountryClick: onCountryClick,
         }).addTo(leafletMap);
       });
     };
     cacheCountries();
+
   };
 
   myMap = new Map();
+
 
 /*
 
