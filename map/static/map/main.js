@@ -18,6 +18,10 @@ $(function() {
       polygon = L.polygon(reverseCoordinates(coordinates), {clickable: false});
     }
 
+    this.getPolygonCenter = function () {
+      return polygon.getBounds().getCenter();
+    }
+
     var highlight = function(style) {
       polygon.setStyle($.extend({
         dashArray: ''
@@ -63,6 +67,8 @@ $(function() {
     var countries = {};
     var currentlySelectedCountry = null;
     var currentEndCountries = [];
+    var trip = []
+    var tripStart = null;
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -84,11 +90,23 @@ $(function() {
       }
     };
 
+    var drawTripLine = function() {
+      pointList = [];
+      for (var i = 0; i < trip.length; i++) {
+        pointList.push(countries[trip[i]].getPolygonCenter());
+      }
+      L.polyline(pointList).addTo(leafletMap);
+    }
+
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
 
-      if (startCountry.name in currentEndCountries) {
-        console.log("hi");
+      if (tripStart === null) {
+        trip.push(startCountry.name);
+      }
+      if ($.inArray(startCountry.name, currentEndCountries) > -1) {
+        trip.push(startCountry.name);
+        drawTripLine();
         // draw a line from start to end
       }
 
