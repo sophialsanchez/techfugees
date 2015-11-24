@@ -11,18 +11,20 @@ $(function() {
   function Country (name, coordinates) {
     this.name = name;
     this.coordinates = coordinates;
-    this.selected = false;
+    this.polygon = L.polygon(coordinates);
 
-    this.highlight = function(color, weight, fillOpacity, layerGroup) {
-      layerGroup.addLayer(this.coordinates);
-      myPolygon = L.polygon(reverseCoordinates(this.coordinates));
-      myPolygon.setStyle({
+    this.highlight = function(color, weight, fillOpacity) {
+      this.polygon.setStyle({
         weight: weight,
         color: color,
         dashArray: '',
         fillOpacity: fillOpacity,
       });
-      myPolygon.addTo(map);
+      map.addLayer(this.polygon);
+    }
+
+    this.removeHighlight = function() {
+      map.removeLayer(this.polygon);
     }
   }
 
@@ -51,8 +53,7 @@ $(function() {
       for (var i = 0; i < countryNames.length; i++) {
         if (this.countries.hasOwnProperty(countryNames[i])) {
           country = this.countries[countryNames[i]];
-          var layerGroup = L.layerGroup();
-          country.highlight(highlightStyle[0], highlightStyle[1], highlightStyle[2], layerGroup);
+          country.highlight(highlightStyle[0], highlightStyle[1], highlightStyle[2]);
         }
       }
     };
@@ -70,12 +71,16 @@ $(function() {
         this.countries = countries;
         geojson = L.geoJson(json, {
             onEachFeature: onEachFeature,
-            style : style
+            style: style,
+            onCountryMouseOut: onCountryMouseOut,
+            onCountryClick: onCountryClick
             }).addTo(map);
 
       function onEachFeature(feature, layer){
           layer.on({
           mouseover : onCountryHighLight,
+          mouseout : onCountryMouseOut,
+          click: onCountryClick
         });
         }
     });
@@ -91,21 +96,37 @@ $(function() {
       }
     };
 
+    function onCountryMouseOut(e){
+      countries[e.target.feature.properties.name].removeHighlight();
+      if (!L.Browser.ie && !L.Browser.opera) {
+        e.target.bringToFront();
+      }
+    }
+
+    function onCountryHighLight(e){
+      var name = e.target.feature.properties.name;
+      if (e.target.feature.properties.name == "change this to currentlySelectedCountry") {
+        highlightCountries([name], ['red', 2, .7]);
+      }
+      else {
+        highlightCountries([name], ['#666', 2, .2]);
+      } 
+      if (!L.Browser.ie && !L.Browser.opera) {
+        e.target.bringToFront();
+      }
+    }
+
+    function onCountryClick(e){
+      var name = e.target.feature.properties.name;
+      alert("HELLO YOU JUST CLICKED A REALLY COOL COUNTRY CALLED " + name)
+    }
+
     this.cacheCountries();
 }
 
-function onCountryHighLight(e){
-  var name = e.target.feature.properties.name;
-  if (e.target.feature.properties.name == "change this to currentlySelectedCountry") {
-    highlightCountries([name], ['red', 2, .7]);
-  }
-  else {
-    highlightCountries([name], ['#666', 2, .2]);
-  }
-  if (!L.Browser.ie && !L.Browser.opera) {
-    e.target.bringToFront();
-  }
-}
+
+
+
 
   function Trip() {
     this.drawTripLine = function(){};
@@ -125,16 +146,6 @@ function reverseCoordinates(coordinates) {
       });
   } 
 
-
-
-function changeCountryColor(layer, weight, color, fillOpacity) {
-    return layer.setStyle({
-      weight: weight,
-      color: color,
-      dashArray: '',
-      fillOpacity: fillOpacity,
-    });
-  }
 
 /*
 
