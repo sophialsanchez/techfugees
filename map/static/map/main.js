@@ -10,7 +10,7 @@ $(function() {
         });
     };
 
-    var polygon = L.polygon(reverseCoordinates(coordinates));
+    var polygon = L.polygon(coordinates);
     this.state = null;
     this.name = countryName;
 
@@ -40,7 +40,7 @@ $(function() {
       highlight({
         color: 'red',
         weight: 2,
-        fillOpacity: .7
+        fillOpacity: .1
       });
     };
 
@@ -75,6 +75,7 @@ $(function() {
       for (var i = 0; i < countryNames.length; i++) {
         if (countryExists(countryNames[i])) {
           var country = countries[countryNames[i]];
+          console.log(callback);
           callback(country);
         }
       }
@@ -97,8 +98,8 @@ $(function() {
         url: '/map/query/' + startCountry.name,
         success: function(reply) {
           endCountries = JSON.parse(reply);
-          currentEndCountries = endCountries;
-          forEachCountry(endCountries, function(country) { country.highlightGreen(); });
+          currentEndCountries = Object.keys(endCountries);
+          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); });
         }
       });
     };
