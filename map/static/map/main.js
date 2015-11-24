@@ -101,8 +101,7 @@ $(function() {
 
     var updateItinerary = function() {
       var list = document.getElementById('itineraryList');
-      alert(trip);
-      $("ol").empty();
+      $("ol").empty(); // probably would be better to just add and subtract specific items
       for (var i = 0; i < trip.length - 1; i++) {
         var entry = document.createElement('li');
         entry.appendChild(document.createTextNode(trip[i] + " --> " + trip[i+1]));
@@ -119,8 +118,20 @@ $(function() {
       if ($.inArray(startCountry.name, currentEndCountries) > -1) {
         trip.push(startCountry.name);
         drawTripLine();
-        // draw a line from start to end
       }
+
+      if (startCountry === currentlySelectedCountry) {
+
+        // Want to remove that country from trip, take that line out of the "Your Itinerary" list
+        // Remove that point from the polyline, and make the previous country in trip the new red country
+
+        //var index = trip.indexOf(startCountry.name);
+       // if (index > -1) {
+      //    trip.splice(index, 1);
+      //  }
+      //  drawTripLine();
+      }
+
 
       if (currentlySelectedCountry) {
         currentlySelectedCountry.removeHighlight();
