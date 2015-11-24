@@ -29,7 +29,7 @@ $(function() {
         polygon = L.polygon(reverseCoordinates(coordinates), {clickable: false});
       }
       else {
-        polygon = L.multiPolygon(reverseCoordinates(coordinates));
+        polygon = L.multiPolygon(reverseCoordinates(coordinates), {clickable: false});
       }
 
     }
