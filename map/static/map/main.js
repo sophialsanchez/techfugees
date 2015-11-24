@@ -96,6 +96,18 @@ $(function() {
         pointList.push(countries[trip[i]].getPolygonCenter());
       }
       L.polyline(pointList).addTo(leafletMap);
+      updateItinerary();
+    }
+
+    var updateItinerary = function() {
+      var list = document.getElementById('itineraryList');
+      alert(trip);
+      $("ol").empty();
+      for (var i = 0; i < trip.length - 1; i++) {
+        var entry = document.createElement('li');
+        entry.appendChild(document.createTextNode(trip[i] + " --> " + trip[i+1]));
+        list.appendChild(entry);
+      }
     }
 
     var selectStartCountry = function(startCountry) {
