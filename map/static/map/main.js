@@ -1,151 +1,179 @@
 $(function() {
-  var map = L.map('map').setView([41.505, 25.00], 3);
 
-  L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
-      attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-      maxZoom: 18,
-      id: 'sophiasanchez.c3eddfe3',
-      accessToken: 'pk.eyJ1Ijoic29waGlhc2FuY2hleiIsImEiOiJjaWdrMjB5NzgwMDlidWpsenRjbzBqb3p2In0.46Rk8ZSkTEtq0cK3nAJmfQ'
-  }).addTo(map);
+  function Country (leafletMap, countryName, coordinates) {
+    // for some reason, we need to reverse the coordinates
+    var reverseCoordinates = function(coordinates) {
+      return coordinates.map(function reverse(item) {
+        return Array.isArray(item) && Array.isArray(item[0])
+          ? item.map(reverse)
+          : item.reverse();
+        });
+    };
 
-  function Country (name, coordinates) {
-    this.name = name;
-    this.coordinates = coordinates;
-    this.polygon = L.polygon(coordinates);
+    var polygon = L.polygon(reverseCoordinates(coordinates));
+    this.state = null;
+    this.name = countryName;
 
-    this.highlight = function(color, weight, fillOpacity) {
-      this.polygon.setStyle({
-        weight: weight,
-        color: color,
-        dashArray: '',
-        fillOpacity: fillOpacity,
-      });
-      map.addLayer(this.polygon);
-    }
+    var highlight = function(style) {
+      polygon.setStyle($.extend({
+        dashArray: ''
+      }, style));
+      leafletMap.addLayer(polygon);
+    };
 
     this.removeHighlight = function() {
-      map.removeLayer(this.polygon);
+      this.state = null;
+      leafletMap.removeLayer(polygon);
+    };
+
+    this.highlightGreen = function() {
+      this.state = 'green';
+      highlight({
+        color: 'green',
+        weight: 2,
+        fillOpacity: .1
+      });
+    };
+
+    this.highlightRed = function() {
+      this.state = 'red';
+      highlight({
+        color: 'red',
+        weight: 2,
+        fillOpacity: .7
+      });
+    };
+
+    this.highlightGrey = function() {
+      this.state = 'grey';
+      highlight({
+        color: '#666',
+        weight: 2,
+        fillOpacity: .2
+      });
     }
-  }
+  };
 
   function Map() {
+    var leafletMap = L.map('map').setView([41.505, 25.00], 3);
+    var countries = {};
+    var currentlySelectedCountry = null;
+    var currentEndCountries = [];
 
-    this.selectStartCountry = function(countryName) {
-      var layerGroup = L.layerGroup();
-      highlightCountries([countryName], ['red', 2, .7], layerGroup);
+    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        maxZoom: 18,
+        id: 'sophiasanchez.c3eddfe3',
+        accessToken: 'pk.eyJ1Ijoic29waGlhc2FuY2hleiIsImEiOiJjaWdrMjB5NzgwMDlidWpsenRjbzBqb3p2In0.46Rk8ZSkTEtq0cK3nAJmfQ'
+    }).addTo(leafletMap);
+
+    var countryExists = function(countryName) {
+      return countries.hasOwnProperty(countryName);
+    };
+
+    var forEachCountry = function(countryNames, callback) {
+      for (var i = 0; i < countryNames.length; i++) {
+        if (countryExists(countryNames[i])) {
+          var country = countries[countryNames[i]];
+          callback(country);
+        }
+      }
+    };
+
+    var selectStartCountry = function(startCountry) {
+      if (!startCountry) { return; }
+
+      if (currentlySelectedCountry) {
+        currentlySelectedCountry.removeHighlight();
+      }
+
+      forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+
+      startCountry.highlightRed();
+      currentlySelectedCountry = startCountry;
+
       $.ajax({
         type: 'GET',
-        url: '/map/query/' + countryName,
-        success: function(reply) {makeEndCountriesGreen(reply, layerGroup)}
+        url: '/map/query/' + startCountry.name,
+        success: function(reply) {
+          endCountries = JSON.parse(reply);
+          currentEndCountries = endCountries;
+          forEachCountry(endCountries, function(country) { country.highlightGreen(); });
+        }
       });
     };
 
-    this.makeEndCountriesGreen = function(reply, layerGroup) {
-        endCountries = JSON.parse(reply);
-        highlightCountries(endCountries, ['green', 2, .1], layerGroup);
-        layerGroup.addTo(map);
-        if (!L.Browser.ie && !L.Browser.opera) {
-          layerGroup.bringToFront();
-        }
+    var countryFromName = function(countryName) {
+      if (!countryExists(countryName)) {
+        return null;
+      }
+      return countries[countryName];
     };
 
-    highlightCountries = function(countryNames, highlightStyle) {
-      for (var i = 0; i < countryNames.length; i++) {
-        if (this.countries.hasOwnProperty(countryNames[i])) {
-          country = this.countries[countryNames[i]];
-          country.highlight(highlightStyle[0], highlightStyle[1], highlightStyle[2]);
-        }
+    var countryFromEvent = function(e) {
+      var countryName = e.target.feature.properties.name;
+      return countryFromName(countryName);
+    };
+
+    var onCountryHighLight = function(e) {
+      var country = countryFromEvent(e);
+
+      if (!country) { return; }
+
+      if (country.state === null) {
+        country.highlightGrey();
       }
     };
 
-    this.cacheCountries = function() {
-      var countries = {};
-      d3.json(COUNTRIES_DATA_JSON_URL, function (json){
+    var onCountryMouseOut = function(e) {
+      var country = countryFromEvent(e);
+
+      if (!country) { return; }
+
+      if (country.state === 'grey') {
+        country.removeHighlight();
+      }
+    };
+
+    var onCountryClick = function(e) {
+      var country = countryFromEvent(e);
+      selectStartCountry(country);
+    };
+
+    var cacheCountries = function() {
+      d3.json(COUNTRIES_DATA_JSON_URL, function (json) {
         data = json.features;
         for (var i = 0; i < data.length; i++) {
-          name = data[i].properties.name;
-          coordinates = data[i].geometry.coordinates[0];
-          country = new Country(name, coordinates);
-          countries[name] = country;
+          var countryName = data[i].properties.name;
+          var countryCoordinates = data[i].geometry.coordinates[0];
+          var country = new Country(leafletMap, countryName, countryCoordinates);
+          countries[countryName] = country;
         }
-        this.countries = countries;
-        geojson = L.geoJson(json, {
-            onEachFeature: onEachFeature,
-            style: style,
-            onCountryMouseOut: onCountryMouseOut,
-            onCountryClick: onCountryClick
-            }).addTo(map);
 
-      function onEachFeature(feature, layer){
-          layer.on({
-          mouseover : onCountryHighLight,
-          mouseout : onCountryMouseOut,
-          click: onCountryClick
-        });
-        }
-    });
-    }
-
-    style = function(feature) {
-      return {
-        fillColor: "#E3E3E3",
-        weight: 1,
-        opacity: 0.4,
-        color: 'white',
-        fillOpacity: 0.3
-      }
-    };
-
-    function onCountryMouseOut(e){
-      countries[e.target.feature.properties.name].removeHighlight();
-      if (!L.Browser.ie && !L.Browser.opera) {
-        e.target.bringToFront();
-      }
-    }
-
-    function onCountryHighLight(e){
-      var name = e.target.feature.properties.name;
-      if (e.target.feature.properties.name == "change this to currentlySelectedCountry") {
-        highlightCountries([name], ['red', 2, .7]);
-      }
-      else {
-        highlightCountries([name], ['#666', 2, .2]);
-      } 
-      if (!L.Browser.ie && !L.Browser.opera) {
-        e.target.bringToFront();
-      }
-    }
-
-    function onCountryClick(e){
-      var name = e.target.feature.properties.name;
-      alert("HELLO YOU JUST CLICKED A REALLY COOL COUNTRY CALLED " + name)
-    }
-
-    this.cacheCountries();
-}
-
-
-
-
-
-  function Trip() {
-    this.drawTripLine = function(){};
-  }
-
-
-
-
-myMap = new Map();
-
-
-function reverseCoordinates(coordinates) {
-    return coordinates.map(function reverse(item) {
-      return Array.isArray(item) && Array.isArray(item[0]) 
-        ? item.map(reverse) 
-        : item.reverse();
+        L.geoJson(json, {
+          onEachFeature: function(feature, layer) {
+            layer.on({
+              mouseover : onCountryHighLight,
+              mouseout : onCountryMouseOut,
+              click: onCountryClick
+            });
+          },
+          style:  {
+            fillColor: "#E3E3E3",
+            weight: 1,
+            opacity: 0.4,
+            color: 'white',
+            fillOpacity: 0.3
+          },
+          onCountryMouseOut: onCountryMouseOut,
+          onCountryClick: onCountryClick
+        }).addTo(leafletMap);
       });
-  } 
+    };
+    cacheCountries();
+  };
 
+  myMap = new Map();
 
 /*
 
