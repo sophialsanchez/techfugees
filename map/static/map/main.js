@@ -15,7 +15,7 @@ $(function() {
     this.name = countryName;
 
     this.reversePolygon = function() {
-      polygon = L.polygon(reverseCoordinates(coordinates));
+      polygon = L.polygon(reverseCoordinates(coordinates), {clickable: false});
     }
 
     var highlight = function(style) {
@@ -88,6 +88,7 @@ $(function() {
       if (!startCountry) { return; }
 
       if (startCountry.name in currentEndCountries) {
+        console.log("hi");
         // draw a line from start to end
       }
 
