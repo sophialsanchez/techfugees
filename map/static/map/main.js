@@ -139,24 +139,29 @@ $(function() {
       var list = document.getElementById('itineraryList');
       $("ol").empty(); // probably would be better to just add and subtract specific items
       var totalCost = 0;
-
-      for (var i = 0; i < trip.length - 1; i++) {
-        if (trip[i].cost != null) {
-          totalCost += trip[i].cost;
+      if (trip.length > 0) {
+        for (var i = 0; i < trip.length - 1; i++) {
+          if (trip[i].cost != null) {
+            totalCost += trip[i].cost;
+          }
+          var entry = document.createElement('li');
+          entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + ": $" + trip[i+1].cost));
+          list.appendChild(entry);
         }
-        var entry = document.createElement('li');
-        entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + ": $" + trip[i+1].cost));
-        list.appendChild(entry);
-      }
 
-      totalCost += trip[trip.length - 1].cost; // gets the last cost; might wanna change
-      var totalCostP = document.createElement('p');
-      totalCostP.appendChild(document.createTextNode("Total cost: $" + totalCost));
-      list.appendChild(totalCostP);
+        totalCost += trip[trip.length - 1].cost; // gets the last cost; might wanna change
+        var totalCostP = document.createElement('p');
+        totalCostP.appendChild(document.createTextNode("Total cost: $" + totalCost));
+        list.appendChild(totalCostP);
+      }
     }
 
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
+
+      if (currentlySelectedCountry != null && startCountry.state === 'grey') {
+        return;
+      }
 
       if (trip.length === 0) {
         trip.push({country: startCountry.name, cost: null});
@@ -172,8 +177,18 @@ $(function() {
         // Remove that point from the polyline, and make the previous country in trip the new red country
         trip.pop();
         drawTripLine();
-        previousCountry = trip[trip.length - 1].country;
-        startCountry = countries[previousCountry];
+        if (trip.length > 0) {
+          previousCountry = trip[trip.length - 1].country;
+          startCountry = countries[previousCountry];
+        }
+        else {
+          currentlySelectedCountry.removeHighlight();
+          forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+          startCountry = null;
+          currentlySelectedCountry = null;
+          return;
+        }
+        
       }
 
       if (currentlySelectedCountry) {
