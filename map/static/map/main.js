@@ -100,6 +100,7 @@ $(function() {
     var currentlySelectedCountry = null;
     var currentEndCountries = [];
     var trip = []
+    var tripPolyline = null;
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -122,11 +123,15 @@ $(function() {
     };
 
     var drawTripLine = function() {
+      if (this.tripPolyline != null) {
+        leafletMap.removeLayer(this.tripPolyline);
+      }
       pointList = [];
       for (var i = 0; i < trip.length; i++) {
         pointList.push(countries[trip[i].country].getPolygonCenter());
       }
-      L.polyline(pointList).addTo(leafletMap);
+      this.tripPolyline = L.polyline(pointList)
+      this.tripPolyline.addTo(leafletMap);
       updateItinerary();
     }
 
