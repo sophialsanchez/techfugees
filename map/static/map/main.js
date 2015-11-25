@@ -1,5 +1,7 @@
 $(function() {
 
+  swal({   title: "Techfugees",   text: "Click on a country to start building your itinerary.",   type: "info",   confirmButtonText: "Got it!" });
+
   function Country (leafletMap, countryName, coordinates, polygonType) {
     // for some reason, we need to reverse the coordinates
     var reverseCoordinates = function(coordinates) {
@@ -19,10 +21,19 @@ $(function() {
       }
     }
     
-    var polygon = createPolygon();
+    this.getPolygonCenter = function () {
+      return polygon.getBounds().getCenter();
+    }
 
+    var polygon = createPolygon();
+    this.tripCost = null;
     this.state = null;
     this.name = countryName;
+
+    // Refactor code to delete this?
+    this.setTripCost = function(cost) {
+      this.tripCost = cost;
+    }
 
     this.reversePolygon = function() {
       if (polygonType === "Polygon") {
@@ -32,10 +43,6 @@ $(function() {
         polygon = L.multiPolygon(reverseCoordinates(coordinates), {clickable: false});
       }
 
-    }
-
-    this.getPolygonCenter = function () {
-      return polygon.getBounds().getCenter();
     }
 
     var highlight = function(style) {
@@ -76,7 +83,16 @@ $(function() {
         fillOpacity: .2
       });
     }
+
+    this.closePricePopUp = function() {
+      leafletMap.closePopup()
+    }
+
+    this.addPricePopUp = function() {
+      polygon.bindPopup("Average Trip Cost to " + this.name + ": $" + this.tripCost, {offset: new L.Point(0, -30)}).openPopup();
+    }
   };
+
 
   function Map() {
     var leafletMap = L.map('map').setView([41.505, 25.00], 3);
@@ -84,7 +100,6 @@ $(function() {
     var currentlySelectedCountry = null;
     var currentEndCountries = [];
     var trip = []
-    var tripStart = null;
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -109,7 +124,7 @@ $(function() {
     var drawTripLine = function() {
       pointList = [];
       for (var i = 0; i < trip.length; i++) {
-        pointList.push(countries[trip[i]].getPolygonCenter());
+        pointList.push(countries[trip[i].country].getPolygonCenter());
       }
       L.polyline(pointList).addTo(leafletMap);
       updateItinerary();
@@ -118,36 +133,43 @@ $(function() {
     var updateItinerary = function() {
       var list = document.getElementById('itineraryList');
       $("ol").empty(); // probably would be better to just add and subtract specific items
+      var totalCost = 0;
+
       for (var i = 0; i < trip.length - 1; i++) {
+        if (trip[i].cost != null) {
+          totalCost += trip[i].cost;
+        }
         var entry = document.createElement('li');
-        entry.appendChild(document.createTextNode(trip[i] + " --> " + trip[i+1]));
+        entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + ": $" + trip[i+1].cost));
         list.appendChild(entry);
       }
+
+      totalCost += trip[trip.length - 1].cost; // gets the last cost; might wanna change
+      var totalCostP = document.createElement('p');
+      totalCostP.appendChild(document.createTextNode("Total cost: $" + totalCost));
+      list.appendChild(totalCostP);
     }
 
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
 
-      if (tripStart === null) {
-        trip.push(startCountry.name);
+      if (trip.length === 0) {
+        trip.push({country: startCountry.name, cost: null});
       }
-      if ($.inArray(startCountry.name, currentEndCountries) > -1) {
-        trip.push(startCountry.name);
+      if (startCountry.state === 'green') {
+        trip.push({country: startCountry.name, cost: startCountry.tripCost});
         drawTripLine();
       }
 
-      if (startCountry === currentlySelectedCountry) {
-
+      // If the user clicks on the red country, backtrack in the trip
+      if (startCountry.state === 'red') {
         // Want to remove that country from trip, take that line out of the "Your Itinerary" list
         // Remove that point from the polyline, and make the previous country in trip the new red country
-
-        //var index = trip.indexOf(startCountry.name);
-       // if (index > -1) {
-      //    trip.splice(index, 1);
-      //  }
-      //  drawTripLine();
+        trip.pop();
+        drawTripLine();
+        previousCountry = trip[trip.length - 1].country;
+        startCountry = countries[previousCountry];
       }
-
 
       if (currentlySelectedCountry) {
         currentlySelectedCountry.removeHighlight();
@@ -164,7 +186,7 @@ $(function() {
         success: function(reply) {
           endCountries = JSON.parse(reply);
           currentEndCountries = Object.keys(endCountries);
-          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); });
+          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripCost(endCountries[country.name])});
         }
       });
     };
@@ -186,6 +208,10 @@ $(function() {
 
       if (!country) { return; }
 
+      if (country.state === 'green') {
+        country.addPricePopUp();
+      }
+
       if (country.state === null) {
         country.highlightGrey();
         if (!L.Browser.ie && !L.Browser.opera) {
@@ -198,6 +224,10 @@ $(function() {
       var country = countryFromEvent(e);
 
       if (!country) { return; }
+
+      if (country.state === 'green') {
+        country.closePricePopUp();
+      }
 
       if (country.state === 'grey') {
         country.removeHighlight();
@@ -250,158 +280,12 @@ $(function() {
         }).addTo(leafletMap);
       });
     };
+    leafletMap.dragging.disable();
     cacheCountries();
 
   };
 
   myMap = new Map();
-
-
-/*
-
-  var currentlySelectedCountry = null;
-  var currentTarget = null;
-  var endCountries = {};
-  var latlngs = Array();
-  var polylines = [];
-  var polylineLayergroup = L.layerGroup();
-
-  // FIXME: cache the JSON, don't reload it every time
-  d3.json(COUNTRIES_DATA_JSON_URL, function (json){
-
-    function style(feature) {
-      return {
-        fillColor: "#E3E3E3",
-        weight: 1,
-        opacity: 0.4,
-        color: 'white',
-        fillOpacity: 0.3
-      };
-    }
-    geojson = L.geoJson(json, {
-      onEachFeature: onEachFeature,
-      style : style
-    }).addTo(map);
-
-    function onEachFeature(feature, layer){
-      layer.on({
-        click : onCountryClick,
-        mouseover : onCountryHighLight,
-        mouseout : onCountryMouseOut
-      });
-    }
-  });
-
-
-  function onCountryHighLight(e){
-
-    if (e.target.feature.properties.name == currentlySelectedCountry) {
-      changeCountryColor(e.target, 2, 'red', .7)
-    }
-    else {e.target.feature.properties.name in 
-      changeCountryColor(e.target, 2, '#666', .7)
-    }
-
-    if (!L.Browser.ie && !L.Browser.opera) {
-      e.target.bringToFront();
-    }
-
-  }
-
-
-  function onCountryMouseOut(e){
-    geojson.resetStyle(e.target);
-
-    if (currentTarget != null) {
-      changeCountryColor(currentTarget, 2, 'red', .7)
-
-      if (!L.Browser.ie && !L.Browser.opera) {
-        currentTarget.bringToFront();
-      }
-    }
-  }
-
-
-  function onCountryClick(e){
-    polylineLayergroup.clearLayers();
-    polylneLayergroup = L.layerGroup();
-
-    if (e.target.feature.properties.name == currentlySelectedCountry) {
-      currentlySelectedCountry = null;
-      currentTarget = null;
-      geojson.resetStyle(e.target);
-    }
-    else {
-      // deselect old country - could also potentially just use resetStyle
-      if (currentTarget != null){
-        changeCountryColor(currentTarget, 1, "#E3E3E3", .3)
-      }
-
-      // draw red border around selected country
-      currentlySelectedCountry = e.target.feature.properties.name;
-      currentTarget = e.target;
-      changeCountryColor(currentTarget, 2, 'red', .7)
-
-      // grab the data for that start country
-      $.ajax({
-        type: 'GET',
-        url: '/map/query/' + currentlySelectedCountry,
-        success: makeEndCountriesGreen()
-      });
-    }
-  }
-
-  function makeEndCountriesGreen() {
-    return function(data) {
-      endCountries = JSON.parse(data);
-
-      // draw green border for possible end countries
-      // this should really just be a lookup, not a for loop
-        d3.json(COUNTRIES_DATA_JSON_URL, function (json){
-          data = json.features;
-          for (var i = 0; i < data.length; i++) {
-            if (data[i].properties.name in endCountries) {
-              coordinates = data[i].geometry.coordinates[0];
-
-               // for some reason, we need to reverse the coordinates
-              var reversed = reverseCoordinates(coordinates);
-              myPolygon = L.polygon(reversed);
-              latlngs.push(myPolygon);
-              }
-            }
-
-            for (var i = 0; i < latlngs.length; i++) {
-              changeCountryColor(latlngs[i], 2, 'green', .1)
-              polylineLayergroup.addLayer(latlngs[i]);
-            }
-
-            polylineLayergroup.addTo(map);
-            if (!L.Browser.ie && !L.Browser.opera) {
-              currentTarget.bringToFront();
-            }
-            
-            latlngs = Array();
-          });
-        }
-  }
-
-  function changeCountryColor(layer, weight, color, fillOpacity) {
-    return layer.setStyle({
-      weight: weight,
-      color: color,
-      dashArray: '',
-      fillOpacity: fillOpacity,
-    });
-  }
-
-  function reverseCoordinates(coordinates) {
-    return coordinates.map(function reverse(item) {
-      return Array.isArray(item) && Array.isArray(item[0]) 
-        ? item.map(reverse) 
-        : item.reverse();
-      });
-  } 
-*/
 
 });
 
