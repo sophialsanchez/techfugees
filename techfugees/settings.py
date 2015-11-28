@@ -26,7 +26,7 @@ SECRET_KEY = '_!ublgokh)*ipt$mp7ttxfrkmzqt#s^f^o+(=7-n+&1=$n5p%g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [*]
 
 
 # Application definition
