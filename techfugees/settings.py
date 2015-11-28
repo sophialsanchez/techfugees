@@ -80,19 +80,19 @@ WSGI_APPLICATION = 'techfugees.wsgi.application'
 
 
 
-#if 'DATABASE_URL' in os.environ:
+if 'DATABASE_URL' in os.environ:
   # Parse database configuration from $DATABASE_URL
   DATABASES = { 'default': dj_database_url.config() }
   DATABASES['default']['ENGINE'] = 'django_postgrespool'
-#else:
- # DATABASES = {
-  #  'default': {
-   #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #    'NAME': 'techfugees_db',
-     #   'USER': os.environ['USER'],
-      #  'PASSWORD': 'wiinner24',
-       # 'HOST': 'localhost',
-        #'PORT': '5432',
+else:
+  DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'techfugees_db',
+        'USER': os.environ['USER'],
+        'PASSWORD': 'wiinner24',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
