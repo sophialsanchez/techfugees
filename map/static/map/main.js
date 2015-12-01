@@ -270,7 +270,7 @@ $(function() {
         for (var i = 0; i < data.length; i++) {
           var countryName = data[i].properties.name;
           var polygonType = data[i].geometry.type;
-          // takes care of countries with several closed polygons, like Italy
+          // takes care of countries with several islands, like Italy
           var countryCoordinates = []
           if (data[i].geometry.type === "MultiPolygon") {
             for (var j = 0; j < data[i].geometry.coordinates.length; j++) {
@@ -307,9 +307,45 @@ $(function() {
     };
     cacheCountries();
 
+    var resetMapVars = function() {
+      currentlySelectedCountry = null;
+      currentEndCountries = [];
+      trip = []
+      tripPolyline = null;
+    }
+
+    var clearMap = function() {
+      if (currentlySelectedCountry === null) {
+        return;
+      }
+      else {
+        currentlySelectedCountry.removeHighlight();
+        forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+        leafletMap.removeLayer(this.tripPolyline);
+        $("ol").empty();
+      }
+    }
+
+    this.clear = function() {
+      clearMap();
+      resetMapVars();
+    }
+
   };
 
   myMap = new Map();
+
+$('#startOver').click(startOver)
+$('#endTrip').click(endTrip)
+
+function startOver() {
+  myMap.clear();
+}
+
+function endTrip() {
+    swal({   title: "Mapping Smuggling Networks",   text: "You have ended your trip.",   type: "info",   confirmButtonText: "Got it!" });
+    myMap.clear();
+}
 
 });
 
