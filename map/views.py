@@ -9,8 +9,9 @@ def index(request):
     latest_question_list = Trip.objects.all()
     return render(request, 'map/index.html')
 
-
 def query(request, slug):
+	if "-" in slug:
+		slug = slug.replace("-", " ")
 	trips = Trip.objects.filter(start_country = slug)
 	countries = {}
 	for trip in trips:

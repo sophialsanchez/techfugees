@@ -27,7 +27,7 @@ SECRET_KEY = '_!ublgokh)*ipt$mp7ttxfrkmzqt#s^f^o+(=7-n+&1=$n5p%g'
 DEBUG = True
 
 # allow all
-ALLOWED_HOSTS = [*]
+ALLOWED_HOSTS = []
 
 
 # Application definition

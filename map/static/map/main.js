@@ -1,6 +1,6 @@
 $(function() {
 
-  swal({   title: "Techfugees",   text: "Click on a country to start building your itinerary.",   type: "info",   confirmButtonText: "Got it!" });
+  swal({   title: "Mapping Smuggling Networks",   text: "Click on a country to start building your itinerary.",   type: "info",   confirmButtonText: "Got it!" });
 
   function Country (leafletMap, countryName, coordinates, polygonType) {
     // for some reason, we need to reverse the coordinates
@@ -200,9 +200,14 @@ $(function() {
       startCountry.highlightRed();
       currentlySelectedCountry = startCountry;
 
+      ajaxCallName = startCountry.name
+      if (ajaxCallName.indexOf(" ") > -1) {
+        ajaxCallName = ajaxCallName.replace(" ", "-");
+      }
+
       $.ajax({
         type: 'GET',
-        url: '/map/query/' + startCountry.name,
+        url: '/map/query/' + ajaxCallName,
         success: function(reply) {
           endCountries = JSON.parse(reply);
           currentEndCountries = Object.keys(endCountries);
