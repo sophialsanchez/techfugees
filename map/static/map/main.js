@@ -305,7 +305,6 @@ $(function() {
         }).addTo(leafletMap);
       });
     };
-    leafletMap.dragging.disable();
     cacheCountries();
 
   };
