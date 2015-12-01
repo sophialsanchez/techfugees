@@ -202,7 +202,7 @@ $(function() {
 
       ajaxCallName = startCountry.name
       if (ajaxCallName.indexOf(" ") > -1) {
-        ajaxCallName = ajaxCallName.replace(" ", "-");
+        ajaxCallName = ajaxCallName.replace(/ /g, "-");
       }
 
       $.ajax({
