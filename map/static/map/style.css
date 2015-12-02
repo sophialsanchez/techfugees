@@ -7,3 +7,10 @@ h1, h2 {
 }
 
 #map { height: 600px; width: 1000px;}
+
+.sweet-alert .visibleInput{
+    display: inline-block;
+    height: auto;
+    width: auto;
+    margin: auto;
+}

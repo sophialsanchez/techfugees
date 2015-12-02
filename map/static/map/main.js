@@ -26,13 +26,13 @@ $(function() {
     }
 
     var polygon = createPolygon();
-    this.tripCost = null;
+    this.tripDetails = null;
     this.state = null;
     this.name = countryName;
 
     // Refactor code to delete this?
-    this.setTripCost = function(cost) {
-      this.tripCost = cost;
+    this.setTripDetails = function(details) {
+      this.tripDetails = details;
     }
 
     this.reversePolygon = function() {
@@ -89,7 +89,8 @@ $(function() {
     }
 
     this.addPricePopUp = function() {
-      polygon.bindPopup("Average Trip Cost to " + this.name + ": $" + this.tripCost, {offset: new L.Point(0, -30)}).openPopup();
+      modesOfTransport = Object.keys(this.tripDetails).join().replace(/,/g, ", ")
+      polygon.bindPopup("Modes of Transport to " + this.name + ": " + modesOfTransport, {offset: new L.Point(0, -30)}).openPopup();
     }
   };
 
@@ -145,7 +146,9 @@ $(function() {
             totalCost += trip[i].cost;
           }
           var entry = document.createElement('li');
-          entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + ": $" + trip[i+1].cost));
+          mode = trip[i+1].mode
+          mode = mode.toLowerCase();
+          entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + " by " + mode + " (" + trip[i+1].year + ")" +": $" + trip[i+1].cost));
           list.appendChild(entry);
         }
 
@@ -167,13 +170,35 @@ $(function() {
         trip.push({country: startCountry.name, cost: null});
       }
       if (startCountry.state === 'green') {
-        trip.push({country: startCountry.name, cost: startCountry.tripCost});
-        drawTripLine();
+        transportation = Object.keys(startCountry.tripDetails);
+        fullTripInfo = {};
+        fullTripInfoButtons = [];
+        for (var i = 0; i < transportation.length; i++) {
+          years = Object.keys(startCountry.tripDetails[transportation[i]]);
+          mostRecentYear = Math.max.apply(Math, years);
+          cost = startCountry.tripDetails[transportation[i]][mostRecentYear];
+          button = '<input class=\"visibleInput\" type=\"radio\" name=\"mode\" value=\"' + transportation[i] + '\">' + transportation[i] + ": $" + cost + " (" + mostRecentYear + ")" + '<br>'
+          fullTripInfo[transportation[i]] = {cost: cost, year: mostRecentYear};
+          fullTripInfoButtons.push(button);
+        }
+        fullTripInfoButtons = fullTripInfoButtons.join().replace(/,/g, "");
+
+        swal({
+          title: "Mapping Smuggling Networks",
+          text: "Please select a mode of transportation to " + startCountry.name + ":<br><br>" + fullTripInfoButtons,
+          html: true },
+          function(isConfirm) {
+            mode = $('input[name="mode"]:checked').val();
+            trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"]});
+            drawTripLine();
+        });
+
+
       }
 
       // If the user clicks on the red country, backtrack in the trip
       if (startCountry.state === 'red') {
-        // Want to remove that country from trip, take that line out of the "Your Itinerary" list
+        // Remove that country from trip, take that line out of the "Your Itinerary" list
         // Remove that point from the polyline, and make the previous country in trip the new red country
         trip.pop();
         drawTripLine();
@@ -211,7 +236,7 @@ $(function() {
         success: function(reply) {
           endCountries = JSON.parse(reply);
           currentEndCountries = Object.keys(endCountries);
-          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripCost(endCountries[country.name])});
+          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
         }
       });
     };

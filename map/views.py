@@ -17,13 +17,22 @@ def query(request, slug):
 	for trip in trips:
 		if trip.start_country != trip.end_country:
 			if trip.end_country not in countries:
-				countries[trip.end_country] = [trip.USD_equiv_avg]
+				countries[trip.end_country] = {trip.service: {trip.year: [trip.USD_equiv_avg]}}
 			else:
-				prices = countries[trip.end_country]
-				prices.append(trip.USD_equiv_avg)
-				countries[trip.end_country] = prices
+				if trip.service in countries[trip.end_country]:
+					if trip.year in countries[trip.end_country][trip.service]:
+						prices = countries[trip.end_country][trip.service][trip.year]
+						prices.append(trip.USD_equiv_avg)
+						countries[trip.end_country][trip.service][trip.year] = prices
+					else:
+						countries[trip.end_country][trip.service][trip.year] = [trip.USD_equiv_avg]
+				else:
+					countries[trip.end_country][trip.service] = {trip.year: [trip.USD_equiv_avg]}
+
 	for key, value in countries.iteritems():
-		pricesAsIntegers = [int(re.sub("\D", "", i)) for i in value]
-		avgPrice = int(sum(pricesAsIntegers))/len(pricesAsIntegers) if len(pricesAsIntegers) > 0 else float('nan')
-		countries[key] = avgPrice
+		for keyService, valueService in countries[key].iteritems():
+			for keyYear, valueYear in countries[key][keyService].iteritems():
+				pricesAsIntegers = [int(re.sub("\D", "", i)) for i in valueYear]
+				avgPrice = int(sum(pricesAsIntegers))/len(pricesAsIntegers) if len(pricesAsIntegers) > 0 else float('nan')
+				countries[key][keyService][keyYear] = avgPrice
 	return HttpResponse(json.dumps(countries))
