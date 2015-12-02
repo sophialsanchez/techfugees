@@ -15,6 +15,8 @@ def query(request, slug):
 	trips = Trip.objects.filter(start_country = slug)
 	countries = {}
 	for trip in trips:
+		if trip.service == "Unclear":
+			trip.service = "Unknown"
 		if trip.start_country != trip.end_country:
 			if trip.end_country not in countries:
 				countries[trip.end_country] = {trip.service: {trip.year: [trip.USD_equiv_avg]}}
