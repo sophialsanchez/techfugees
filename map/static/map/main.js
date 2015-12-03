@@ -147,9 +147,23 @@ $(function() {
           }
           var entry = document.createElement('li');
           mode = trip[i+1].mode
-          mode = mode.toLowerCase();
           entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + " by " + mode + " (" + trip[i+1].year + ")" +": $" + trip[i+1].cost));
+          entry.style.fontWeight = 'bold';
           list.appendChild(entry);
+          allYears = Object.keys(countries[trip[i+1].country].tripDetails[mode]).sort(function(a, b){return b-a});
+
+          var unorderedList = document.createElement('ul');
+          list.appendChild(unorderedList);
+
+          for (var j = 0; j < allYears.length; j++) {
+            currYear = allYears[j];
+            currPrice = countries[trip[i+1].country].tripDetails[mode][currYear];
+            if (currYear != trip[i+1].year) {
+              var entryTwo = document.createElement('li')
+              entryTwo.appendChild(document.createTextNode(currYear + ": $" + currPrice));
+              unorderedList.appendChild(entryTwo);
+            }
+          }
         }
 
         totalCost += trip[trip.length - 1].cost; // gets the last cost; might wanna change
@@ -186,11 +200,18 @@ $(function() {
         swal({
           title: "Mapping Smuggling Networks",
           text: "Please select a mode of transportation to " + startCountry.name + ":<br><br>" + fullTripInfoButtons,
-          html: true },
+          html: true,
+          showCancelButton: true,
+          closeOnCancel: true },
           function(isConfirm) {
-            mode = $('input[name="mode"]:checked').val();
-            trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"]});
-            drawTripLine();
+            if (isConfirm) {
+              mode = $('input[name="mode"]:checked').val();
+              trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"]});
+              drawTripLine();
+            }
+            else {
+              return;
+            }
         });
 
 

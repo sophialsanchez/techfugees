@@ -15,6 +15,7 @@ def query(request, slug):
 	trips = Trip.objects.filter(start_country = slug)
 	countries = {}
 	for trip in trips:
+		trip.service = trip.service.strip()
 		if trip.service == "Unclear":
 			trip.service = "Unknown"
 		if trip.start_country != trip.end_country:
