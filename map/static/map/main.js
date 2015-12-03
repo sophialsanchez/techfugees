@@ -150,14 +150,15 @@ $(function() {
           entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + " by " + mode + " (" + trip[i+1].year + ")" +": $" + trip[i+1].cost));
           entry.style.fontWeight = 'bold';
           list.appendChild(entry);
-          allYears = Object.keys(countries[trip[i+1].country].tripDetails[mode]).sort(function(a, b){return b-a});
+
+          allYears = Object.keys(trip[i+1].previousYears).sort(function(a, b){return b-a});
 
           var unorderedList = document.createElement('ul');
           list.appendChild(unorderedList);
 
           for (var j = 0; j < allYears.length; j++) {
             currYear = allYears[j];
-            currPrice = countries[trip[i+1].country].tripDetails[mode][currYear];
+            currPrice = trip[i+1].previousYears[currYear];
             if (currYear != trip[i+1].year) {
               var entryTwo = document.createElement('li')
               entryTwo.appendChild(document.createTextNode(currYear + ": $" + currPrice));
@@ -187,14 +188,24 @@ $(function() {
         transportation = Object.keys(startCountry.tripDetails);
         fullTripInfo = {};
         fullTripInfoButtons = [];
+
         for (var i = 0; i < transportation.length; i++) {
           years = Object.keys(startCountry.tripDetails[transportation[i]]);
           mostRecentYear = Math.max.apply(Math, years);
           cost = startCountry.tripDetails[transportation[i]][mostRecentYear];
           button = '<input class=\"visibleInput\" type=\"radio\" name=\"mode\" value=\"' + transportation[i] + '\">' + transportation[i] + ": $" + cost + " (" + mostRecentYear + ")" + '<br>'
-          fullTripInfo[transportation[i]] = {cost: cost, year: mostRecentYear};
+          fullTripInfo[transportation[i]] = {cost: cost, year: mostRecentYear, previousYears: {}};
+
+          for (var j = 0; j < years.length; j++) {
+              if (years[j] != mostRecentYear) {
+                costForThatYear = startCountry.tripDetails[transportation[i]][years[j]];
+                fullTripInfo[transportation[i]].previousYears[years[j]] = costForThatYear;
+              }
+          }
+
           fullTripInfoButtons.push(button);
         }
+
         fullTripInfoButtons = fullTripInfoButtons.join().replace(/,/g, "");
 
         swal({
@@ -206,7 +217,7 @@ $(function() {
           function(isConfirm) {
             if (isConfirm) {
               mode = $('input[name="mode"]:checked').val();
-              trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"]});
+              trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
               drawTripLine();
             }
             else {
