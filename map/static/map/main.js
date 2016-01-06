@@ -378,7 +378,9 @@ $(function() {
       else {
         currentlySelectedCountry.removeHighlight();
         forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-        leafletMap.removeLayer(this.tripPolyline);
+        if (this.tripPolyline != null) {
+          leafletMap.removeLayer(this.tripPolyline);
+        }
         $("ol").empty();
       }
     }
