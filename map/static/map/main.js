@@ -216,16 +216,38 @@ $(function() {
           closeOnCancel: true },
           function(isConfirm) {
             if (isConfirm) {
+              previousCountry = trip[trip.length - 1].country;
+              console.log(previousCountry);
+              countries[previousCountry].removeHighlight();
               mode = $('input[name="mode"]:checked').val();
               trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
               drawTripLine();
             }
             else {
+              startCountry.removeHighlight();
+              forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+              startCountry = null;
+              currentlySelectedCountry = null;
+              previousCountry = trip[trip.length - 1].country;
+              countries[previousCountry].highlightRed();
+
+              ajaxCallName = previousCountry;
+              if (ajaxCallName.indexOf(" ") > -1) {
+                ajaxCallName = ajaxCallName.replace(/ /g, "-");
+              }
+
+              $.ajax({
+                type: 'GET',
+                url: '/map/query/' + ajaxCallName,
+                success: function(reply) {
+                  endCountries = JSON.parse(reply);
+                  currentEndCountries = Object.keys(endCountries);
+                  forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
+                }
+              });
               return;
             }
         });
-
-
       }
 
       // If the user clicks on the red country, backtrack in the trip
@@ -245,7 +267,6 @@ $(function() {
           currentlySelectedCountry = null;
           return;
         }
-        
       }
 
       if (currentlySelectedCountry) {
@@ -253,7 +274,6 @@ $(function() {
       }
 
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-
       startCountry.highlightRed();
       currentlySelectedCountry = startCountry;
 
