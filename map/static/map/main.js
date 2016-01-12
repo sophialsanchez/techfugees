@@ -138,23 +138,39 @@ $(function() {
 
     var updateItinerary = function() {
       var list = document.getElementById('itineraryList');
-      $("ol").empty(); // probably would be better to just add and subtract specific items
+      $("ul").empty(); // probably would be better to just add and subtract specific items
       var totalCost = 0;
       if (trip.length > 0) {
         for (var i = 0; i < trip.length - 1; i++) {
           if (trip[i].cost != null) {
             totalCost += trip[i].cost;
           }
-          var entry = document.createElement('li');
+          var entry = document.createElement('div');
+          entry.setAttribute("id", "tripEntry");
+          var brk = document.createElement('br');
+          var header = document.createElement('h3');
+          header.appendChild(document.createTextNode(trip[i].country + " to " + trip[i+1].country));
           mode = trip[i+1].mode
-          entry.appendChild(document.createTextNode(trip[i].country + " --> " + trip[i+1].country + " by " + mode + " (" + trip[i+1].year + ")" +": $" + trip[i+1].cost));
-          entry.style.fontWeight = 'bold';
+          entry.appendChild(header);
+          entry.appendChild(brk);
+          entry.appendChild(document.createElement('br'));
+          entry.appendChild(document.createTextNode("Mode: " + mode));
+          entry.appendChild(brk);
+          entry.appendChild(document.createTextNode("Price (" + trip[i+1].year + "): " +"$" + trip[i+1].cost));
+          entry.appendChild(document.createElement('br'));
+          var showOlderPrices = document.createElement('button');
+          var buttonText = document.createTextNode("Show older prices");
+          showOlderPrices.appendChild(buttonText);
+          showOlderPrices.setAttribute("id", "showOlderPrices");
+          entry.appendChild(showOlderPrices);
+
           list.appendChild(entry);
 
           allYears = Object.keys(trip[i+1].previousYears).sort(function(a, b){return b-a});
 
           var unorderedList = document.createElement('ul');
-          list.appendChild(unorderedList);
+          unorderedList.setAttribute("id", "olderPrices");
+          entry.appendChild(unorderedList);
 
           for (var j = 0; j < allYears.length; j++) {
             currYear = allYears[j];
@@ -184,76 +200,26 @@ $(function() {
       if (trip.length === 0) {
         trip.push({country: startCountry.name, cost: null});
       }
+
       if (startCountry.state === 'green') {
-        transportation = Object.keys(startCountry.tripDetails);
-        fullTripInfo = {};
-        fullTripInfoButtons = [];
-
-        for (var i = 0; i < transportation.length; i++) {
-          years = Object.keys(startCountry.tripDetails[transportation[i]]);
-          mostRecentYear = Math.max.apply(Math, years);
-          cost = startCountry.tripDetails[transportation[i]][mostRecentYear];
-          button = '<input class=\"visibleInput\" type=\"radio\" name=\"mode\" value=\"' + transportation[i] + '\">' + transportation[i] + ": $" + cost + " (" + mostRecentYear + ")" + '<br>'
-          fullTripInfo[transportation[i]] = {cost: cost, year: mostRecentYear, previousYears: {}};
-
-          for (var j = 0; j < years.length; j++) {
-              if (years[j] != mostRecentYear) {
-                costForThatYear = startCountry.tripDetails[transportation[i]][years[j]];
-                fullTripInfo[transportation[i]].previousYears[years[j]] = costForThatYear;
-              }
-          }
-
-          fullTripInfoButtons.push(button);
-        }
-
-        fullTripInfoButtons = fullTripInfoButtons.join().replace(/,/g, "");
-
-        swal({
-          title: "Mapping Smuggling Networks",
-          text: "Please select a mode of transportation to " + startCountry.name + ":<br><br>" + fullTripInfoButtons,
-          html: true,
-          showCancelButton: true,
-          closeOnCancel: true },
-          function(isConfirm) {
-            if (isConfirm) {
-              previousCountry = trip[trip.length - 1].country;
-              console.log(previousCountry);
-              countries[previousCountry].removeHighlight();
-              mode = $('input[name="mode"]:checked').val();
-              trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
-              drawTripLine();
-            }
-            else {
-              startCountry.removeHighlight();
-              forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-              startCountry = null;
-              currentlySelectedCountry = null;
-              previousCountry = trip[trip.length - 1].country;
-              countries[previousCountry].highlightRed();
-
-              ajaxCallName = previousCountry;
-              if (ajaxCallName.indexOf(" ") > -1) {
-                ajaxCallName = ajaxCallName.replace(/ /g, "-");
-              }
-
-              $.ajax({
-                type: 'GET',
-                url: '/map/query/' + ajaxCallName,
-                success: function(reply) {
-                  endCountries = JSON.parse(reply);
-                  currentEndCountries = Object.keys(endCountries);
-                  forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
-                }
-              });
-              return;
-            }
-        });
+        selectTransportationPopUp(startCountry);
       }
 
-      // If the user clicks on the red country, backtrack in the trip
       if (startCountry.state === 'red') {
-        // Remove that country from trip, take that line out of the "Your Itinerary" list
-        // Remove that point from the polyline, and make the previous country in trip the new red country
+        startCountry = backtrackOneStepAndUpdateStartCountry();
+      }
+
+      if (currentlySelectedCountry) {
+        currentlySelectedCountry.removeHighlight();
+      }
+
+      forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+      startCountry.highlightRed();
+      currentlySelectedCountry = startCountry;
+      ajaxCall(startCountry.name);
+    };
+
+    var backtrackOneStepAndUpdateStartCountry = function() {
         trip.pop();
         drawTripLine();
         if (trip.length > 0) {
@@ -264,20 +230,66 @@ $(function() {
           currentlySelectedCountry.removeHighlight();
           forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
           startCountry = null;
-          currentlySelectedCountry = null;
-          return;
         }
-      }
+        return startCountry;
+    }
 
-      if (currentlySelectedCountry) {
-        currentlySelectedCountry.removeHighlight();
-      }
+    var getFullTripInfo = function(startCountry) {
+        transportation = Object.keys(startCountry.tripDetails);
+        fullTripInfo = {};
+        fullTripInfoButtons = [];
 
-      forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-      startCountry.highlightRed();
-      currentlySelectedCountry = startCountry;
+        for (var i = 0; i < transportation.length; i++) {
+          years = Object.keys(startCountry.tripDetails[transportation[i]]);
+          mostRecentYear = Math.max.apply(Math, years);
+          cost = startCountry.tripDetails[transportation[i]][mostRecentYear];
+          button = '<input class=\"visibleInput\" type=\"radio\" name=\"mode\" value=\"' + transportation[i] + '\">' + " " + transportation[i] + ": $" + cost + " (" + mostRecentYear + ")" + '<br>'
+          fullTripInfo[transportation[i]] = {cost: cost, year: mostRecentYear, previousYears: {}};
+          for (var j = 0; j < years.length; j++) {
+              if (years[j] != mostRecentYear) {
+                costForThatYear = startCountry.tripDetails[transportation[i]][years[j]];
+                fullTripInfo[transportation[i]].previousYears[years[j]] = costForThatYear;
+              }
+          }
+          fullTripInfoButtons.push(button);
+        }
 
-      ajaxCallName = startCountry.name
+        return {'buttons': fullTripInfoButtons.join().replace(/,/g, ""),
+                'fullTripInfo': fullTripInfo};
+        }
+
+    var selectTransportationPopUp = function(startCountry, fullTripInfo) {
+      tripInfo = getFullTripInfo(startCountry);
+      fullTripInfo = tripInfo.fullTripInfo;
+      fullTripInfoButtons = tripInfo.buttons;
+      swal({
+        title: "Mapping Smuggling Networks",
+        text: "Please select a mode of transportation to " + startCountry.name + ":<br><br>" + fullTripInfoButtons,
+        html: true,
+        showCancelButton: true,
+        closeOnCancel: true },
+        function(isConfirm) {
+          if (isConfirm) {
+            previousCountry = trip[trip.length - 1].country;
+            countries[previousCountry].removeHighlight();
+            mode = $('input[name="mode"]:checked').val();
+            trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
+            drawTripLine();
+          }
+          else {
+            startCountry.removeHighlight();
+            forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+            startCountry = null;
+            currentlySelectedCountry = null;
+            previousCountry = trip[trip.length - 1].country;
+            countries[previousCountry].highlightRed();
+            ajaxCall(previousCountry);
+            return;
+          }
+        });
+    }
+
+    var ajaxCall = function(ajaxCallName) {
       if (ajaxCallName.indexOf(" ") > -1) {
         ajaxCallName = ajaxCallName.replace(/ /g, "-");
       }
@@ -291,7 +303,7 @@ $(function() {
           forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
         }
       });
-    };
+    }
 
     var countryFromName = function(countryName) {
       if (!countryExists(countryName)) {
@@ -401,7 +413,7 @@ $(function() {
         if (this.tripPolyline != null) {
           leafletMap.removeLayer(this.tripPolyline);
         }
-        $("ol").empty();
+        $("ul").empty();
       }
     }
 
@@ -416,6 +428,8 @@ $(function() {
 
 $('#startOver').click(startOver)
 $('#endTrip').click(endTrip)
+
+$('#itinerary').on('click', '#showOlderPrices', function(){$("#olderPrices").toggle()});
 
 function startOver() {
   myMap.clear();

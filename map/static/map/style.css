@@ -1,16 +1,113 @@
+body {
+	padding: none;
+	margin: 0;
+}
 p {
-	color: green;
+	color: #00FF00;
 }
 
 h1, h2 {
 	text-align: center;
+	font-family: 'Courier New';
+	color: white;
 }
 
-#map { height: 600px; width: 1000px;}
+h1 {
+	font-size: 40px;
+}
+
+h2 {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+h3 {
+	color: white;
+	font-style: bold;
+	margin: 0px;
+}
+
+body {
+	background-color: #614B79;
+}
+
+
+#olderPrices {
+	display: none;
+}
+
+ul {
+	list-style:none;
+    padding-left:0px;
+    margin: 0px;
+}
+
+#map {
+	height: 100%;
+	width: 75%;
+	float: right;
+	padding: none;
+	margin: none;
+}
 
 .sweet-alert .visibleInput{
     display: inline-block;
     height: auto;
     width: auto;
     margin: auto;
+}
+
+#logo {
+	width: 200px;
+	height: auto;
+}
+
+#buttons {
+	padding-top: 10px;
+	margin: 10px;
+	border-top: 2px solid white;
+	text-align: center;
+}
+
+#startOver, #endTrip {
+	margin: 0px auto 0px auto;
+}
+
+#tripEntry {
+	width: auto;
+	-webkit-box-shadow: inset -1px -1px 62px -8px rgba(0,0,0,0.48);
+	-moz-box-shadow: inset -1px -1px 62px -8px rgba(0,0,0,0.48);
+	box-shadow: inset -1px -1px 62px -8px rgba(0,0,0,0.48);
+	padding: 10px;
+}
+
+#itineraryTitle {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	background-color: #3f314f;
+}
+
+#itineraryList {
+	color: white;
+	font-size: 16px;
+	font-family: 'Courier New';
+	list-style-type: none;
+}
+
+#itinerary {
+	height: 100%;
+	position: absolute;
+	width: 24.9%;
+	-webkit-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+	-moz-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+	box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+
+
+#itinerary, #map {
+	display:inline;
+	text-align: center;
+}
+
+#container {
+	position: relative;
 }
