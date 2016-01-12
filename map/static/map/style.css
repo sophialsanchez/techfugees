@@ -1,6 +1,7 @@
 body {
 	padding: none;
 	margin: 0;
+	background-color: #614B79;
 }
 p {
 	color: #00FF00;
@@ -27,13 +28,24 @@ h3 {
 	margin: 0px;
 }
 
-body {
-	background-color: #614B79;
+
+label {
+	color: white;
+	font-family: 'Courier New';
 }
 
+#itinerary {
+	height: 100%;
+	position: absolute;
+	width: 24.9%;
+	-webkit-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+	-moz-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+	box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+}
 
-#olderPrices {
+.olderPrices {
 	display: none;
+	color: #b3b3b3;
 }
 
 ul {
@@ -58,19 +70,48 @@ ul {
 }
 
 #logo {
-	width: 200px;
-	height: auto;
+	width: auto;
+	position: absolute;
+	height: 100px;
+	padding: 0;
+	bottom: 0;
+	left: 0;
+}
+
+#logodiv {
+	position:absolute;
+	bottom: 0;
 }
 
 #buttons {
 	padding-top: 10px;
 	margin: 10px;
-	border-top: 2px solid white;
 	text-align: center;
 }
 
 #startOver, #endTrip {
 	margin: 0px auto 0px auto;
+	background-color: white; 
+	border: none;
+	text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: 'Courier New';
+    padding: 10px 10px;
+     -moz-border-radius: 15px;
+ 	 -webkit-border-radius: 15px;
+  	border: 5px solid #614B79;
+  	outline: none;
+
+}
+
+#startOver:hover, #endTrip:hover  {
+	background-color: #cc9f00
+}
+
+#startOver:active, #endTrip:active  {
+	background-color: #b38b00
 }
 
 #tripEntry {
@@ -94,15 +135,6 @@ ul {
 	list-style-type: none;
 }
 
-#itinerary {
-	height: 100%;
-	position: absolute;
-	width: 24.9%;
-	-webkit-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
-	-moz-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
-	box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
-
-
 #itinerary, #map {
 	display:inline;
 	text-align: center;
@@ -110,4 +142,7 @@ ul {
 
 #container {
 	position: relative;
+	overflow: auto;
 }
+
+

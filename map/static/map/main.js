@@ -149,7 +149,8 @@ $(function() {
           entry.setAttribute("id", "tripEntry");
           var brk = document.createElement('br');
           var header = document.createElement('h3');
-          header.appendChild(document.createTextNode(trip[i].country + " to " + trip[i+1].country));
+          fromCountryToCountry = trip[i].country + " to " + trip[i+1].country;
+          header.appendChild(document.createTextNode(fromCountryToCountry));
           mode = trip[i+1].mode
           entry.appendChild(header);
           entry.appendChild(brk);
@@ -159,18 +160,15 @@ $(function() {
           entry.appendChild(document.createTextNode("Price (" + trip[i+1].year + "): " +"$" + trip[i+1].cost));
           entry.appendChild(document.createElement('br'));
           var showOlderPrices = document.createElement('button');
-          var buttonText = document.createTextNode("Show older prices");
-          showOlderPrices.appendChild(buttonText);
-          showOlderPrices.setAttribute("id", "showOlderPrices");
-          entry.appendChild(showOlderPrices);
 
           list.appendChild(entry);
 
           allYears = Object.keys(trip[i+1].previousYears).sort(function(a, b){return b-a});
 
           var unorderedList = document.createElement('ul');
-          unorderedList.setAttribute("id", "olderPrices");
+          unorderedList.setAttribute("class", "olderPrices");
           entry.appendChild(unorderedList);
+
 
           for (var j = 0; j < allYears.length; j++) {
             currYear = allYears[j];
@@ -192,7 +190,7 @@ $(function() {
 
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
-
+      console.log(currentlySelectedCountry);
       if (currentlySelectedCountry != null && startCountry.state === 'grey') {
         return;
       }
@@ -214,9 +212,11 @@ $(function() {
       }
 
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-      startCountry.highlightRed();
-      currentlySelectedCountry = startCountry;
-      ajaxCall(startCountry.name);
+      if (startCountry) {
+        startCountry.highlightRed();
+        currentlySelectedCountry = startCountry;
+        ajaxCall(startCountry.name);
+      }
     };
 
     var backtrackOneStepAndUpdateStartCountry = function() {
@@ -418,6 +418,7 @@ $(function() {
     }
 
     this.clear = function() {
+      uncheckBoxes();
       clearMap();
       resetMapVars();
     }
@@ -428,8 +429,8 @@ $(function() {
 
 $('#startOver').click(startOver)
 $('#endTrip').click(endTrip)
-
-$('#itinerary').on('click', '#showOlderPrices', function(){$("#olderPrices").toggle()});
+$('#showOlderPrices').click(function(){$(".olderPrices").toggle()});
+//$('#itinerary').on('click', '#showOlderPrices', function(){$("#olderPrices").toggle()});
 
 function startOver() {
   myMap.clear();
@@ -439,6 +440,15 @@ function endTrip() {
     swal({   title: "Mapping Smuggling Networks",   text: "You have ended your trip.",   type: "info",   confirmButtonText: "Got it!" });
     myMap.clear();
 }
+
+function uncheckBoxes()
+{
+     var checkboxes = document.getElementsByTagName('input');   
+     for (var i = 0; i < checkboxes.length; i++)
+     {
+      checkboxes[i].checked = false;
+     }
+ }
 
 });
 
