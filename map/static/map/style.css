@@ -4,7 +4,9 @@ body {
 	background-color: #614B79;
 }
 p {
-	color: #00FF00;
+	color: #00e600;
+	font-weight: bold;
+	font-size: 18px;
 }
 
 h1, h2 {
@@ -35,6 +37,7 @@ label {
 }
 
 #itinerary {
+	overflow: auto;
 	height: 100%;
 	position: absolute;
 	width: 24.9%;
@@ -42,6 +45,15 @@ label {
 	-moz-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
 	box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
 }
+
+#listOfTripLegs {
+   width: 100%;
+   position: absolute;
+   top: 67px;			/* TO DO: this absolute positioning is kind of cheating. Fix it. */
+   bottom: 170px;
+   overflow-y: auto;
+   overflow-x: hidden;
+=}
 
 .olderPrices {
 	display: none;
@@ -72,9 +84,9 @@ ul {
 #logo {
 	width: auto;
 	position: absolute;
-	height: 100px;
+	height: 70px;
 	padding: 0;
-	bottom: 0;
+	bottom: 10px;
 	left: 0;
 }
 
@@ -85,13 +97,18 @@ ul {
 
 #buttons {
 	padding-top: 10px;
-	margin: 10px;
+	margin: 0px;
 	text-align: center;
+	position: absolute;
+	bottom: 93px;
+	left: 0;
+	right: 0;
 }
+
 
 #startOver, #endTrip {
 	margin: 0px auto 0px auto;
-	background-color: white; 
+	background-color: #cccccc; 
 	border: none;
 	text-align: center;
     text-decoration: none;
@@ -104,14 +121,30 @@ ul {
   	border: 5px solid #614B79;
   	outline: none;
 
+   	background-image: -webkit-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: -moz-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: -ms-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: -o-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: linear-gradient(to bottom, #cccccc, #b3b1b3);
+
 }
 
 #startOver:hover, #endTrip:hover  {
-	background-color: #cc9f00
+  	background-image: -webkit-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: -moz-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: -ms-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: -o-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: linear-gradient(to bottom, #ffc700, #cc9e00);
+  	text-decoration: none;
 }
 
 #startOver:active, #endTrip:active  {
-	background-color: #b38b00
+	background-image: -webkit-linear-gradient(top, #cc9e00, #997700);
+  	background-image: -moz-linear-gradient(top, #cc9e00, #997700);
+  	background-image: -ms-linear-gradient(top, #cc9e00, #997700);
+  	background-image: -o-linear-gradient(top, #cc9e00, #997700);
+  	background-image: linear-gradient(to bottom, #cc9e00, #997700);
+  	text-decoration: none;
 }
 
 #tripEntry {

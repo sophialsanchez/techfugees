@@ -24,13 +24,15 @@
 		<div id="itineraryTitle">
 			<h2>Your Itinerary</h2>
 		</div>
-		<ul id="itineraryList"></ul>
-		<div style="block;" id="buttons">
+		<div id="listOfTripLegs">
+			<ul id="itineraryList"></ul>
+		</div>
+		<div id="buttons">
 			<label for="showOlderPrices">Show Older Prices</label>
 			<input type="checkbox" id="showOlderPrices" />
 			<br>
-			<button class="mainButton" id='startOver'>Restart</button>
-			<button class="mainButton" id='endTrip'>End Trip</button>
+			<button class="mainButton" id='startOver'><b>Restart</button>
+			<button class="mainButton" id='endTrip'><b>End Trip</button>
 		</div>
 		<div id="logodiv">
 			<img id="logo" src="{% static 'map/images/GITOC_logo.jpg' %}"></img>

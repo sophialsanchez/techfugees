@@ -1,6 +1,6 @@
 $(function() {
 
-  swal({   title: "Mapping Smuggling Networks",   text: "Click on a country to start building your itinerary.",   type: "info",   confirmButtonText: "Got it!" });
+  swal({   title: "Mapping Smuggling Networks",   text: "Click on a country to start building your itinerary. Red shows the country you have selected. Green shows the next possible leg in the trip.",   type: "info",   confirmButtonText: "Got it!" });
 
   function Country (leafletMap, countryName, coordinates, polygonType) {
     // for some reason, we need to reverse the coordinates
@@ -190,7 +190,7 @@ $(function() {
 
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
-      console.log(currentlySelectedCountry);
+
       if (currentlySelectedCountry != null && startCountry.state === 'grey') {
         return;
       }
@@ -227,7 +227,6 @@ $(function() {
           startCountry = countries[previousCountry];
         }
         else {
-          currentlySelectedCountry.removeHighlight();
           forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
           startCountry = null;
         }
@@ -430,7 +429,7 @@ $(function() {
 $('#startOver').click(startOver)
 $('#endTrip').click(endTrip)
 $('#showOlderPrices').click(function(){$(".olderPrices").toggle()});
-//$('#itinerary').on('click', '#showOlderPrices', function(){$("#olderPrices").toggle()});
+
 
 function startOver() {
   myMap.clear();
