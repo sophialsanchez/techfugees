@@ -22,7 +22,12 @@ $(function() {
     }
     
     this.getPolygonCenter = function () {
-      return polygon.getBounds().getCenter();
+      if (countryName === "Russia") {
+        return [62.431074232920906, 95.2734375]
+      }
+      else {
+        return polygon.getBounds().getCenter();
+      }
     }
 
     var polygon = createPolygon();
@@ -204,7 +209,9 @@ $(function() {
       }
 
       if (startCountry.state === 'red') {
-        startCountry = backtrackOneStepAndUpdateStartCountry();
+        backtrackedVars = backtrackOneStepAndUpdateStartCountry(startCountry);
+        startCountry = backtrackedVars.startCountry;
+        currentlySelectedCountry = backtrackedVars.currentlySelectedCountry;
       }
 
       if (currentlySelectedCountry) {
@@ -219,9 +226,11 @@ $(function() {
       }
     };
 
-    var backtrackOneStepAndUpdateStartCountry = function() {
+    var backtrackOneStepAndUpdateStartCountry = function(startCountry) {
+        startCountry.removeHighlight();
         trip.pop();
         drawTripLine();
+        currentlySelectedCountry = null;
         if (trip.length > 0) {
           previousCountry = trip[trip.length - 1].country;
           startCountry = countries[previousCountry];
@@ -230,7 +239,7 @@ $(function() {
           forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
           startCountry = null;
         }
-        return startCountry;
+        return {'startCountry': startCountry, 'currentlySelectedCountry': currentlySelectedCountry};
     }
 
     var getFullTripInfo = function(startCountry) {
