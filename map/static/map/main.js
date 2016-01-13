@@ -407,6 +407,26 @@ $(function() {
 //      }
 //    }
 
+    var ajaxQueryByStartCity= function(city, country) {
+      if (country.indexOf(" ") > -1) {
+        country = country.replace(/ /g, "-");
+      }
+
+      if (city.indexOf(" ") > -1) {
+        city = city.replace(/ /g, "-");
+      }
+
+      $.ajax({
+        type: 'GET',
+        url: '/map/queryByStartCity/' + country + "/" + city,
+        success: function(reply) {
+          endCountries = JSON.parse(reply);
+          currentEndCountries = Object.keys(endCountries);
+          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
+        }
+      });
+    }
+
     var ajaxCall = function(ajaxCallName) {
       if (ajaxCallName.indexOf(" ") > -1) {
         ajaxCallName = ajaxCallName.replace(/ /g, "-");
