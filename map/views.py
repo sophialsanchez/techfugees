@@ -16,8 +16,6 @@ def getCitiesInACountry(request, slug):
 	country = {}
 	cities = []
 	for trip in trips:
-		if trip.start == trip.start_country:
-			trip.start = "Unspecified"
 		cities.append(trip.start)
 	citiesSet = list(set(cities))
 	country[slug] = citiesSet
@@ -33,8 +31,6 @@ def queryByStartCity(request, slug1, slug2):
 	countries = {}
 	for trip in trips:
 		trip.service = trip.service.strip()
-		if trip.end == trip.end_country:
-			trip.end = "Unspecified"
 		if trip.service == "Unclear":
 			trip.service = "Unknown"
 		if trip.start_country != trip.end_country:
@@ -71,8 +67,6 @@ def query(request, slug):
 	countries = {}
 	for trip in trips:
 		trip.service = trip.service.strip()
-		if trip.end == trip.end_country:
-			trip.end = "Unspecified"
 		if trip.service == "Unclear":
 			trip.service = "Unknown"
 		if trip.start_country != trip.end_country:
