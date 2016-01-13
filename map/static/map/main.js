@@ -22,6 +22,7 @@ $(function() {
     }
     
     this.getPolygonCenter = function () {
+      // hardcoded because multipolygon center formula didn't work, looking for better solution
       if (countryName === "Russia") {
         return [62.431074232920906, 95.2734375]
       }
@@ -47,7 +48,6 @@ $(function() {
       else {
         polygon = L.multiPolygon(reverseCoordinates(coordinates), {clickable: false});
       }
-
     }
 
     var highlight = function(style) {
@@ -94,9 +94,24 @@ $(function() {
     }
 
     this.addPricePopUp = function() {
-      modesOfTransport = Object.keys(this.tripDetails).join().replace(/,/g, ", ")
-      polygon.bindPopup("Modes of Transport to " + this.name + ": " + modesOfTransport, {offset: new L.Point(0, -30)}).openPopup();
+      cities = Object.keys(this.tripDetails);
+      modesOfTransport = []
+      for (var i=0; i<cities.length;i++) {
+        modesOfTransport.push(Object.keys(this.tripDetails[cities[i]]))
+      }
+      var mergedModesOfTransport = [].concat.apply([], modesOfTransport);
+      mergedModesOfTransport = this.unique(mergedModesOfTransport).join().replace(/,/g, ", ")
+      polygon.bindPopup("Modes of Transport to " + this.name + ": " + mergedModesOfTransport, {offset: new L.Point(0, -30)}).openPopup();
     }
+
+    this.unique = function(lst) {
+      var result = [];
+      $.each(lst, function(i, e) {
+        if ($.inArray(e, result) == -1) result.push(e);
+      });
+      return result;
+    }
+    
   };
 
 
@@ -154,7 +169,7 @@ $(function() {
           entry.setAttribute("id", "tripEntry");
           var brk = document.createElement('br');
           var header = document.createElement('h3');
-          fromCountryToCountry = trip[i].country + " to " + trip[i+1].country;
+          fromCountryToCountry = trip[i].city + ", " + trip[i].country + " to " + trip[i+1].city + ", " + trip[i+1].country;
           header.appendChild(document.createTextNode(fromCountryToCountry));
           mode = trip[i+1].mode
           entry.appendChild(header);
@@ -201,11 +216,11 @@ $(function() {
       }
 
       if (trip.length === 0) {
-        trip.push({country: startCountry.name, cost: null});
+        trip.push({country: startCountry.name, city: null, cost: null});
       }
 
       if (startCountry.state === 'green') {
-        selectTransportationPopUp(startCountry);
+        selectCityPopUp(startCountry);
       }
 
       if (startCountry.state === 'red') {
@@ -224,6 +239,8 @@ $(function() {
         currentlySelectedCountry = startCountry;
         ajaxCall(startCountry.name);
       }
+
+
     };
 
     var backtrackOneStepAndUpdateStartCountry = function(startCountry) {
@@ -242,15 +259,25 @@ $(function() {
         return {'startCountry': startCountry, 'currentlySelectedCountry': currentlySelectedCountry};
     }
 
-    var getFullTripInfo = function(startCountry) {
-        transportation = Object.keys(startCountry.tripDetails);
-        fullTripInfo = {};
-        fullTripInfoButtons = [];
+    var getCityInfo = function(startCountry) {
+      cities = Object.keys(startCountry.tripDetails);
+      cityButtons = [];
 
+      for (var i = 0; i < cities.length; i++) {
+        button = '<input class=\"visibleInput\" type=\"radio\" name=\"city\" value=\"' + cities[i] + '\">' + " " + cities[i] + '<br>'
+        cityButtons.push(button);
+      }
+      return cityButtons.join().replace(/,/g, "")
+      }
+
+    var getTransportationInfo = function(startCountry, selectedCity) {
+      transportation = Object.keys(startCountry.tripDetails[selectedCity]);
+      fullTripInfo = {};
+      fullTripInfoButtons = [];
         for (var i = 0; i < transportation.length; i++) {
-          years = Object.keys(startCountry.tripDetails[transportation[i]]);
+          years = Object.keys(startCountry.tripDetails[selectedCity][transportation[i]]);
           mostRecentYear = Math.max.apply(Math, years);
-          cost = startCountry.tripDetails[transportation[i]][mostRecentYear];
+          cost = startCountry.tripDetails[selectedCity][transportation[i]][mostRecentYear];
           button = '<input class=\"visibleInput\" type=\"radio\" name=\"mode\" value=\"' + transportation[i] + '\">' + " " + transportation[i] + ": $" + cost + " (" + mostRecentYear + ")" + '<br>'
           fullTripInfo[transportation[i]] = {cost: cost, year: mostRecentYear, previousYears: {}};
           for (var j = 0; j < years.length; j++) {
@@ -266,23 +293,21 @@ $(function() {
                 'fullTripInfo': fullTripInfo};
         }
 
-    var selectTransportationPopUp = function(startCountry, fullTripInfo) {
-      tripInfo = getFullTripInfo(startCountry);
-      fullTripInfo = tripInfo.fullTripInfo;
-      fullTripInfoButtons = tripInfo.buttons;
+    var selectCityPopUp = function(startCountry) {
+      buttons = getCityInfo(startCountry);
       swal({
-        title: "Mapping Smuggling Networks",
-        text: "Please select a mode of transportation to " + startCountry.name + ":<br><br>" + fullTripInfoButtons,
+        title: "Select City",
+        text: "Please select a city in " + startCountry.name + ":<br><br>" + buttons,
         html: true,
         showCancelButton: true,
-        closeOnCancel: true },
+        closeOnCancel: true,
+        closeOnConfirm: false,
+        },
         function(isConfirm) {
           if (isConfirm) {
-            previousCountry = trip[trip.length - 1].country;
-            countries[previousCountry].removeHighlight();
-            mode = $('input[name="mode"]:checked').val();
-            trip.push({country: startCountry.name, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
-            drawTripLine();
+            selectedCity = $('input[name="city"]:checked').val();
+            console.log(selectedCity);
+            selectTransportationPopUp(startCountry, getTransportationInfo(startCountry, selectedCity), selectedCity);
           }
           else {
             startCountry.removeHighlight();
@@ -296,6 +321,56 @@ $(function() {
           }
         });
     }
+
+    var selectTransportationPopUp = function(startCountry, tripInfo, selectedCity) {
+      fullTripInfo = tripInfo.fullTripInfo;
+      fullTripInfoButtons = tripInfo.buttons;
+    //  closeOnConfirmBool = closeOnConfirmBoolFunc();
+      swal({
+        title: "Select Mode of Transportation",
+        text: "Please select a mode of transportation to " + selectedCity + ", " + startCountry.name + ":<br><br>" + fullTripInfoButtons,
+        html: true,
+        showCancelButton: true,
+        closeOnCancel: true,
+     //   closeOnConfirm: closeOnConfirmBool
+        },
+        function(isConfirm) {
+          if (isConfirm) {
+            previousCountry = trip[trip.length - 1].country;
+            countries[previousCountry].removeHighlight();
+            mode = $('input[name="mode"]:checked').val();
+            trip.push({country: startCountry.name, city: selectedCity, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
+            drawTripLine();
+         //   noRoutesPopUp();
+          }
+          else {
+            startCountry.removeHighlight();
+            forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+            startCountry = null;
+            currentlySelectedCountry = null;
+            previousCountry = trip[trip.length - 1].country;
+            countries[previousCountry].highlightRed();
+            ajaxCall(previousCountry);
+            return;
+          }
+        });
+    }
+
+//    var closeOnConfirmBoolFunc = function() {
+//    console.log(currentEndCountries);
+//      if (Object.keys(currentEndCountries).length === 0) {
+//        return false
+//      }
+//     else {
+//        return true
+//      };
+//    }
+
+//    var noRoutesPopUp = function() {
+//      if (Object.keys(currentEndCountries).length === 0) {
+//        swal({   title: "Mapping Smuggling Networks",   text: "No routes are available from this country. Click on the country in red to backtrack, or end your trip using the button on the left panel.",   type: "info",   confirmButtonText: "Got it!" });
+//      }
+//    }
 
     var ajaxCall = function(ajaxCallName) {
       if (ajaxCallName.indexOf(" ") > -1) {
