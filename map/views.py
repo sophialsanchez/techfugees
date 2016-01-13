@@ -9,6 +9,20 @@ def index(request):
     latest_question_list = Trip.objects.all()
     return render(request, 'map/index.html')
 
+def getCitiesInACountry(request, slug):
+	if "-" in slug:
+		slug = slug.replace("-", " ")
+	trips = Trip.objects.filter(start_country = slug)
+	country = {}
+	cities = []
+	for trip in trips:
+		if trip.start == trip.start_country:
+			trip.start = "Unspecified"
+		cities.append(trip.start)
+	citiesSet = list(set(cities))
+	country[slug] = citiesSet
+	return HttpResponse(json.dumps(country))
+
 def query(request, slug):
 	if "-" in slug:
 		slug = slug.replace("-", " ")

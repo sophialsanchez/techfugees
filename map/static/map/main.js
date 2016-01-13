@@ -20,7 +20,7 @@ $(function() {
         return L.multiPolygon(coordinates);
       }
     }
-    
+
     this.getPolygonCenter = function () {
       // hardcoded because multipolygon center formula didn't work, looking for better solution
       if (countryName === "Russia") {
@@ -216,10 +216,11 @@ $(function() {
       }
 
       if (trip.length === 0) {
-        trip.push({country: startCountry.name, city: null, cost: null});
+        getStartCities(startCountry.name);
       }
 
       if (startCountry.state === 'green') {
+        console.log(trip);
         selectCityPopUp(startCountry);
       }
 
@@ -239,8 +240,6 @@ $(function() {
         currentlySelectedCountry = startCountry;
         ajaxCall(startCountry.name);
       }
-
-
     };
 
     var backtrackOneStepAndUpdateStartCountry = function(startCountry) {
@@ -293,11 +292,48 @@ $(function() {
                 'fullTripInfo': fullTripInfo};
         }
 
+      var getCityButtons = function(startCities) {
+        cityButtons = [];
+
+        for (var i = 0; i < startCities.length; i++) {
+          button = '<input class=\"visibleInput\" type=\"radio\" name=\"city\" value=\"' + cities[i] + '\">' + " " + cities[i] + '<br>'
+          cityButtons.push(button);
+        }
+
+        return cityButtons.join().replace(/,/g, "")
+        }
+
+      // This is pretty repetitive with selectCityPopUp, should refactor
+    var selectStartCity = function(startCities, startCountry) {
+      buttons = getCityButtons(startCities);
+      swal({
+        title: "Select City",
+        text: "Please select a departure city in " + startCountry + ":<br><br>" + buttons,
+        html: true,
+        showCancelButton: true,
+        closeOnCancel: true,
+        closeOnConfirm: true,
+        },
+        function(isConfirm) {
+          if (isConfirm) {
+            selectedCity = $('input[name="city"]:checked').val();
+            trip.push({country: startCountry, city: selectedCity, cost: null});
+          }
+          else {
+            countries[startCountry].removeHighlight();
+            forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+            startCountry = null;
+            currentlySelectedCountry = null;
+            return;
+          }
+        });
+    }
+
     var selectCityPopUp = function(startCountry) {
       buttons = getCityInfo(startCountry);
       swal({
         title: "Select City",
-        text: "Please select a city in " + startCountry.name + ":<br><br>" + buttons,
+        text: "Please select a destination city in " + startCountry.name + ":<br><br>" + buttons,
         html: true,
         showCancelButton: true,
         closeOnCancel: true,
@@ -306,7 +342,6 @@ $(function() {
         function(isConfirm) {
           if (isConfirm) {
             selectedCity = $('input[name="city"]:checked').val();
-            console.log(selectedCity);
             selectTransportationPopUp(startCountry, getTransportationInfo(startCountry, selectedCity), selectedCity);
           }
           else {
@@ -384,6 +419,23 @@ $(function() {
           endCountries = JSON.parse(reply);
           currentEndCountries = Object.keys(endCountries);
           forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
+        }
+      });
+    }
+
+    var getStartCities = function(ajaxCallName) {
+      var ajaxCallNameNoSpace = ajaxCallName;
+      if (ajaxCallName.indexOf(" ") > -1) {
+        ajaxCallNameNoSpace = ajaxCallName.replace(/ /g, "-");
+      }
+
+      $.ajax({
+        type: 'GET',
+        url: '/map/getCitiesInACountry/' + ajaxCallNameNoSpace,
+        success: function(reply) {
+          citiesJSON = JSON.parse(reply);
+          cities = citiesJSON[ajaxCallName]
+          selectStartCity(cities, ajaxCallName);
         }
       });
     }
