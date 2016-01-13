@@ -220,7 +220,6 @@ $(function() {
       }
 
       if (startCountry.state === 'green') {
-        console.log(trip);
         selectCityPopUp(startCountry);
       }
 
@@ -235,10 +234,10 @@ $(function() {
       }
 
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-      if (startCountry) {
+      if (startCountry && trip.length > 0) {
         startCountry.highlightRed();
         currentlySelectedCountry = startCountry;
-        ajaxCall(startCountry.name);
+        ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
       }
     };
 
@@ -318,6 +317,7 @@ $(function() {
           if (isConfirm) {
             selectedCity = $('input[name="city"]:checked').val();
             trip.push({country: startCountry, city: selectedCity, cost: null});
+            ajaxQueryByStartCity(selectedCity, startCountry)
           }
           else {
             countries[startCountry].removeHighlight();
@@ -351,7 +351,7 @@ $(function() {
             currentlySelectedCountry = null;
             previousCountry = trip[trip.length - 1].country;
             countries[previousCountry].highlightRed();
-            ajaxCall(previousCountry);
+            ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
             return;
           }
         });
@@ -385,7 +385,7 @@ $(function() {
             currentlySelectedCountry = null;
             previousCountry = trip[trip.length - 1].country;
             countries[previousCountry].highlightRed();
-            ajaxCall(previousCountry);
+            ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
             return;
           }
         });
