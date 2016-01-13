@@ -315,6 +315,7 @@ $(function() {
         },
         function(isConfirm) {
           if (isConfirm) {
+            countries[startCountry].highlightRed();
             selectedCity = $('input[name="city"]:checked').val();
             trip.push({country: startCountry, city: selectedCity, cost: null});
             ajaxQueryByStartCity(selectedCity, startCountry)
@@ -351,7 +352,7 @@ $(function() {
             currentlySelectedCountry = null;
             previousCountry = trip[trip.length - 1].country;
             countries[previousCountry].highlightRed();
-            ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
+            ajaxQueryByStartCity(trip[trip.length-1].city, trip[trip.length-1].country);
             return;
           }
         });
@@ -385,7 +386,7 @@ $(function() {
             currentlySelectedCountry = null;
             previousCountry = trip[trip.length - 1].country;
             countries[previousCountry].highlightRed();
-            ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
+            ajaxQueryByStartCity(trip[trip.length-1].city, trip[trip.length-1].country);
             return;
           }
         });
