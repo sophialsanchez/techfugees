@@ -38,7 +38,7 @@ def queryByStartCity(request, slug1, slug2):
 				countries[trip.end_country] = {trip.end: {trip.service: {trip.year: [trip.USD_equiv_avg]}}}
 			else:
 				if trip.end in countries[trip.end_country]:
-					if trip.service in countries[trip.end_country]:
+					if trip.service in countries[trip.end_country][trip.end]:
 						if trip.year in countries[trip.end_country][trip.end][trip.service]:
 							prices = countries[trip.end_country][trip.end][trip.service][trip.year]
 							prices.append(trip.USD_equiv_avg)
@@ -49,7 +49,7 @@ def queryByStartCity(request, slug1, slug2):
 						countries[trip.end_country][trip.end][trip.service] = {trip.year: [trip.USD_equiv_avg]}
 				else:
 					countries[trip.end_country][trip.end] = {trip.service: {trip.year: [trip.USD_equiv_avg]}}
-
+					
 	for key, value in countries.iteritems():
 		for keyEnd, valueEnd in countries[key].iteritems():
 			for keyService, valueService in countries[key][keyEnd].iteritems():
@@ -58,6 +58,8 @@ def queryByStartCity(request, slug1, slug2):
 					avgPrice = int(sum(pricesAsIntegers))/len(pricesAsIntegers) if len(pricesAsIntegers) > 0 else float('nan')
 					countries[key][keyEnd][keyService][keyYear] = avgPrice
 	return HttpResponse(json.dumps(countries))
+
+
 
 def query(request, slug):
 	if "-" in slug:

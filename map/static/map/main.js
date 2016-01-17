@@ -187,6 +187,7 @@ $(function() {
           unorderedList.setAttribute("class", "olderPrices");
           entry.appendChild(unorderedList);
 
+
           for (var j = 0; j < allYears.length; j++) {
             currYear = allYears[j];
             currPrice = trip[i+1].previousYears[currYear];
@@ -206,9 +207,6 @@ $(function() {
     }
 
     var selectStartCountry = function(startCountry) {
-      console.log(startCountry.name);
-      console.log(startCountry.state);
-      console.log(currentlySelectedCountry);
       if (!startCountry) { return; }
 
       if (currentlySelectedCountry != null && startCountry.state === 'grey') {
@@ -236,9 +234,9 @@ $(function() {
 
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
       if (startCountry && trip.length > 0) {
-        startCountry.highlightRed();
+  //      startCountry.highlightRed();
         currentlySelectedCountry = startCountry;
-        ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
+  //      ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
       }
     };
 
@@ -281,7 +279,9 @@ $(function() {
           fullTripInfo[transportation[i]] = {cost: cost, year: mostRecentYear, previousYears: {}};
           for (var j = 0; j < years.length; j++) {
               if (years[j] != mostRecentYear) {
-                costForThatYear = startCountry.tripDetails[transportation[i]][years[j]];
+                console.log(transportation[i]);
+                console.log(startCountry.tripDetails);
+                costForThatYear = startCountry.tripDetails[selectedCity][transportation[i]][years[j]];
                 fullTripInfo[transportation[i]].previousYears[years[j]] = costForThatYear;
               }
           }
