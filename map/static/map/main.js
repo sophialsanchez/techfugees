@@ -62,6 +62,10 @@ $(function() {
       leafletMap.removeLayer(polygon);
     };
 
+    this.drawMarker = function() {
+      var marker = L.marker([51.5, -0.09]).addTo(leafletMap);
+    }
+
     this.highlightGreen = function() {
       this.state = 'green';
       highlight({
@@ -207,8 +211,8 @@ $(function() {
     }
 
     var selectStartCountry = function(startCountry) {
-      console.log(trip);
 
+      startCountry.drawMarker();
       if (!startCountry) { return; }
 
       if (currentlySelectedCountry != null && startCountry.state === 'grey') {
