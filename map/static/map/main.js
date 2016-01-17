@@ -187,7 +187,6 @@ $(function() {
           unorderedList.setAttribute("class", "olderPrices");
           entry.appendChild(unorderedList);
 
-
           for (var j = 0; j < allYears.length; j++) {
             currYear = allYears[j];
             currPrice = trip[i+1].previousYears[currYear];
@@ -207,6 +206,9 @@ $(function() {
     }
 
     var selectStartCountry = function(startCountry) {
+      console.log(startCountry.name);
+      console.log(startCountry.state);
+      console.log(currentlySelectedCountry);
       if (!startCountry) { return; }
 
       if (currentlySelectedCountry != null && startCountry.state === 'grey') {
@@ -214,6 +216,7 @@ $(function() {
       }
 
       if (trip.length === 0) {
+        currentlySelectedCountry = startCountry;
         getStartCities(startCountry.name);
       }
 
