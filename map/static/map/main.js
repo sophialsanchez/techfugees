@@ -111,9 +111,7 @@ $(function() {
       });
       return result;
     }
-    
   };
-
 
   function Map() {
     var leafletMap = L.map('map').setView([41.505, 25.00], 3);
@@ -377,6 +375,7 @@ $(function() {
             mode = $('input[name="mode"]:checked').val();
             trip.push({country: startCountry.name, city: selectedCity, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
             drawTripLine();
+            ajaxQueryByStartCity(selectedCity, startCountry.name);
          //   noRoutesPopUp();
           }
           else {
@@ -578,7 +577,6 @@ $(function() {
       clearMap();
       resetMapVars();
     }
-
   };
 
   myMap = new Map();
