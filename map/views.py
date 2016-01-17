@@ -47,9 +47,10 @@ def queryByStartCity(request, slug1, slug2):
 							countries[trip.end_country][trip.end][trip.service][trip.year] = [trip.USD_equiv_avg]
 					else:
 						countries[trip.end_country][trip.end][trip.service] = {trip.year: [trip.USD_equiv_avg]}
+
 				else:
-					countries[trip.end_country][trip.end] = {trip.service: {trip.year: [trip.USD_equiv_avg]}}
-					
+					countries[trip.end_country][trip.end] = {trip.service: {trip.year: [trip.USD_equiv_avg]}}	
+	
 	for key, value in countries.iteritems():
 		for keyEnd, valueEnd in countries[key].iteritems():
 			for keyService, valueService in countries[key][keyEnd].iteritems():
