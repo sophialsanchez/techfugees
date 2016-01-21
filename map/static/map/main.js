@@ -1,7 +1,13 @@
 $(function() {
 
-  swal({   title: "Mapping Smuggling Networks",   text: "Click on a country to start building your itinerary. Red shows the country you have selected. Green shows the next possible leg in the trip.",   type: "info",   confirmButtonText: "Got it!" });
+  swal({
+    title: "Mapping Smuggling Networks",
+    text: "Click on a country to start building your itinerary. Red highlighting shows the country you have selected. Green highlighting shows places you can select based on available data.",
+    html: true,
+    type: "info",
+    confirmButtonText: "Got it!" });
 
+ //+ <span style='color:#F8BB86'>Red</span> 
   function Country (leafletMap, countryName, coordinates, polygonType) {
     // for some reason, we need to reverse the coordinates
     var reverseCoordinates = function(coordinates) {
@@ -62,8 +68,9 @@ $(function() {
       leafletMap.removeLayer(polygon);
     };
 
-    this.drawMarker = function() {
-      var marker = L.marker([51.5, -0.09]).addTo(leafletMap);
+    this.getMarker = function() {
+      var marker = new L.marker(this.getPolygonCenter());
+      return marker;
     }
 
     this.highlightGreen = function() {
@@ -124,6 +131,7 @@ $(function() {
     var currentEndCountries = [];
     var trip = []
     var tripPolyline = null;
+    var markerGroup = new L.LayerGroup();
 
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -155,7 +163,24 @@ $(function() {
       }
       this.tripPolyline = L.polyline(pointList)
       this.tripPolyline.addTo(leafletMap);
+      removeAllTripMarkers();
+      addTripMarkers();
       updateItinerary();
+    }
+
+    var removeAllTripMarkers = function() {
+      leafletMap.removeLayer(markerGroup);
+      markerGroup.clearLayers();
+    }
+
+    var addTripMarkers = function() {
+      if (trip.length > 0) {
+        firstCountry = countries[trip[0].country];
+        lastCountry = countries[trip[trip.length-1].country];
+        markerGroup.addLayer(firstCountry.getMarker());
+        markerGroup.addLayer(lastCountry.getMarker());
+        leafletMap.addLayer(markerGroup);
+      }
     }
 
     var updateItinerary = function() {
@@ -212,7 +237,6 @@ $(function() {
 
     var selectStartCountry = function(startCountry) {
 
-      startCountry.drawMarker();
       if (!startCountry) { return; }
 
       if (currentlySelectedCountry != null && startCountry.state === 'grey') {
@@ -242,13 +266,12 @@ $(function() {
       if (startCountry && trip.length > 0) {
         startCountry.highlightRed();
         currentlySelectedCountry = startCountry;
-  //      ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
+        ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
       }
     };
 
     var backtrackOneStepAndUpdateStartCountry = function(startCountry) {
         startCountry.removeHighlight();
-        console.log('pop');
         trip.pop();
         drawTripLine();
         currentlySelectedCountry = null;
@@ -581,6 +604,7 @@ $(function() {
     }
 
     this.clear = function() {
+      removeAllTripMarkers();
       uncheckBoxes();
       clearMap();
       resetMapVars();
@@ -613,6 +637,4 @@ function uncheckBoxes()
  }
 
 });
-
-
 
