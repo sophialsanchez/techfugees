@@ -160,16 +160,16 @@
         return {'startCountry': startCountry, 'currentlySelectedCountry': currentlySelectedCountry};
     }
 
-    var getCityInfo = function(startCountry) {
-      cities = Object.keys(startCountry.tripDetails);
+    var getCityButtons = function(startCities) {
       cityButtons = [];
 
-      for (var i = 0; i < cities.length; i++) {
+      for (var i = 0; i < startCities.length; i++) {
         button = '<input class=\"visibleInput\" type=\"radio\" name=\"city\" value=\"' + cities[i] + '\">' + " " + cities[i] + '<br>'
         cityButtons.push(button);
       }
+
       return cityButtons.join().replace(/,/g, "")
-      }
+    }
 
     var getTransportationInfo = function(startCountry, selectedCity) {
       transportation = Object.keys(startCountry.tripDetails[selectedCity]);
@@ -192,18 +192,9 @@
 
         return {'buttons': fullTripInfoButtons.join().replace(/,/g, ""),
                 'fullTripInfo': fullTripInfo};
-        }
+      }
 
-      var getCityButtons = function(startCities) {
-        cityButtons = [];
 
-        for (var i = 0; i < startCities.length; i++) {
-          button = '<input class=\"visibleInput\" type=\"radio\" name=\"city\" value=\"' + cities[i] + '\">' + " " + cities[i] + '<br>'
-          cityButtons.push(button);
-        }
-
-        return cityButtons.join().replace(/,/g, "")
-        }
 
       // This is pretty repetitive with selectCityPopUp, should refactor
     var selectStartCity = function(startCities, startCountry) {
@@ -234,7 +225,8 @@
     }
 
     var selectCityPopUp = function(startCountry) {
-      buttons = getCityInfo(startCountry);
+      cities = Object.keys(startCountry.tripDetails);
+      buttons = getCityButtons(cities);
       swal({
         title: "Select City",
         text: "Please select a destination city in " + startCountry.name + ":<br><br>" + buttons,
@@ -249,14 +241,7 @@
             selectTransportationPopUp(startCountry, getTransportationInfo(startCountry, selectedCity), selectedCity);
           }
           else {
-            startCountry.removeHighlight();
-            forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-            startCountry = null;
-            currentlySelectedCountry = null;
-            previousCountry = trip[trip.length - 1].country;
-            countries[previousCountry].highlightRed();
-            ajaxQueryByStartCity(trip[trip.length-1].city, trip[trip.length-1].country);
-            return;
+            cancelPopUp(startCountry);
           }
         });
     }
@@ -284,33 +269,20 @@
          //   noRoutesPopUp();
           }
           else {
-            startCountry.removeHighlight();
-            forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-            startCountry = null;
-            currentlySelectedCountry = null;
-            previousCountry = trip[trip.length - 1].country;
-            countries[previousCountry].highlightRed();
-            ajaxQueryByStartCity(trip[trip.length-1].city, trip[trip.length-1].country);
-            return;
+            cancelPopUp(startCountry);
           }
         });
     }
 
-//    var closeOnConfirmBoolFunc = function() {
-//    console.log(currentEndCountries);
-//      if (Object.keys(currentEndCountries).length === 0) {
-//        return false
-//      }
-//     else {
-//        return true
-//      };
-//    }
-
-//    var noRoutesPopUp = function() {
-//      if (Object.keys(currentEndCountries).length === 0) {
-//        swal({   title: "Mapping Smuggling Networks",   text: "No routes are available from this country. Click on the country in red to backtrack, or end your trip using the button on the left panel.",   type: "info",   confirmButtonText: "Got it!" });
-//      }
-//    }
+    var cancelPopUp = function(startCountry) {
+      startCountry.removeHighlight();
+      forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+      startCountry = null;
+      currentlySelectedCountry = null;
+      previousCountry = trip[trip.length - 1].country;
+      countries[previousCountry].highlightRed();
+      ajaxQueryByStartCity(trip[trip.length-1].city, trip[trip.length-1].country);
+    }
 
     var ajaxQueryByStartCity= function(city, country) {
       if (country.indexOf(" ") > -1) {
@@ -324,22 +296,6 @@
       $.ajax({
         type: 'GET',
         url: '/map/queryByStartCity/' + country + "/" + city,
-        success: function(reply) {
-          endCountries = JSON.parse(reply);
-          currentEndCountries = Object.keys(endCountries);
-          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
-        }
-      });
-    }
-
-    var ajaxCall = function(ajaxCallName) {
-      if (ajaxCallName.indexOf(" ") > -1) {
-        ajaxCallName = ajaxCallName.replace(/ /g, "-");
-      }
-
-      $.ajax({
-        type: 'GET',
-        url: '/map/query/' + ajaxCallName,
         success: function(reply) {
           endCountries = JSON.parse(reply);
           currentEndCountries = Object.keys(endCountries);
@@ -484,3 +440,21 @@
       resetMapVars();
     }
   };
+
+
+
+  //    var closeOnConfirmBoolFunc = function() {
+//    console.log(currentEndCountries);
+//      if (Object.keys(currentEndCountries).length === 0) {
+//        return false
+//      }
+//     else {
+//        return true
+//      };
+//    }
+
+//    var noRoutesPopUp = function() {
+//      if (Object.keys(currentEndCountries).length === 0) {
+//        swal({   title: "Mapping Smuggling Networks",   text: "No routes are available from this country. Click on the country in red to backtrack, or end your trip using the button on the left panel.",   type: "info",   confirmButtonText: "Got it!" });
+//      }
+//    }
