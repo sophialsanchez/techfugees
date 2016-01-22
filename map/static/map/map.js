@@ -167,24 +167,24 @@
           forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
           startCountry = null;
         }
+
         return startCountry;
     }
 
     var getCityButtons = function(startCities) {
-      cityButtons = [];
-
+      cityButtons = "";
       for (var i = 0; i < startCities.length; i++) {
         button = '<input class=\"visibleInput\" type=\"radio\" name=\"city\" value=\"' + cities[i] + '\">' + " " + cities[i] + '<br>'
-        cityButtons.push(button);
+        cityButtons = cityButtons + button;
       }
 
-      return cityButtons.join().replace(/,/g, "")
+      return cityButtons;
     }
 
     var getTransportationInfo = function(startCountry, selectedCity) {
       transportation = Object.keys(startCountry.tripDetails[selectedCity]);
       fullTripInfo = {};
-      fullTripInfoButtons = [];
+      fullTripInfoButtons = "";
         for (var i = 0; i < transportation.length; i++) {
           years = Object.keys(startCountry.tripDetails[selectedCity][transportation[i]]);
           mostRecentYear = Math.max.apply(Math, years);
@@ -197,10 +197,10 @@
                 fullTripInfo[transportation[i]].previousYears[years[j]] = costForThatYear;
               }
           }
-          fullTripInfoButtons.push(button);
+          fullTripInfoButtons = fullTripInfoButtons + button
         }
 
-        return {'buttons': fullTripInfoButtons.join().replace(/,/g, ""),
+        return {'buttons': fullTripInfoButtons,
                 'fullTripInfo': fullTripInfo};
       }
 
@@ -217,7 +217,7 @@
         function(isConfirm) {
           if (isConfirm) {
             selectedCity = $('input[name="city"]:checked').val();
-            // if the very first departure city is what's being selected, push it to the trip and display the new end countries
+            // if user is selecting the very first departure city, push that city to the trip and display the new end countries
             if (departureBool){
               startCountry.highlightRed();
               trip.push({country: startCountry.name, city: selectedCity, cost: null});
@@ -236,14 +236,12 @@
     var selectTransportationPopUp = function(startCountry, tripInfo, selectedCity) {
       fullTripInfo = tripInfo.fullTripInfo;
       fullTripInfoButtons = tripInfo.buttons;
-    //  closeOnConfirmBool = closeOnConfirmBoolFunc();
       swal({
         title: "Select Mode of Transportation",
         text: "Please select a mode of transportation to " + selectedCity + ", " + startCountry.name + ":<br><br>" + fullTripInfoButtons,
         html: true,
         showCancelButton: true,
         closeOnCancel: true,
-     //   closeOnConfirm: closeOnConfirmBool
         },
         function(isConfirm) {
           if (isConfirm) {
@@ -253,7 +251,6 @@
             trip.push({country: startCountry.name, city: selectedCity, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
             updateTripLineMarkersAndItinerary();
             ajaxQueryByStartCity(selectedCity, startCountry.name);
-         //   noRoutesPopUp();
           }
           else {
             cancelPopUp(startCountry);
