@@ -17,11 +17,13 @@ $(function() {
 
   function startOver() {
     myMap.clear();
+    uncheckBoxes();
   }
 
   function endTrip() {
     swal({   title: "Mapping Smuggling Networks",   text: "You have ended your trip.",   type: "info",   confirmButtonText: "Got it!" });
     myMap.clear();
+    uncheckBoxes();
   }
 
   function uncheckBoxes()

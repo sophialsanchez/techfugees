@@ -27,6 +27,13 @@
       }
     };
 
+    var updateTripLineMarkersAndItinerary = function() {
+      drawTripLine();
+      removeTripMarkers();
+      addTripMarkers();
+      updateItinerary();
+    }
+
     var drawTripLine = function() {
       if (this.tripPolyline != null) {
         leafletMap.removeLayer(this.tripPolyline);
@@ -37,9 +44,6 @@
       }
       this.tripPolyline = L.polyline(pointList)
       this.tripPolyline.addTo(leafletMap);
-      removeTripMarkers();
-      addTripMarkers();
-      updateItinerary();
     }
 
     var removeTripMarkers = function() {
@@ -66,42 +70,22 @@
           if (trip[i].cost != null) {
             totalCost += trip[i].cost;
           }
-          var entry = document.createElement('div');
-          entry.setAttribute("id", "tripEntry");
-          var brk = document.createElement('br');
-          var header = document.createElement('h3');
-          fromCountryToCountry = trip[i].city + ", " + trip[i].country + " to " + trip[i+1].city + ", " + trip[i+1].country;
-          header.appendChild(document.createTextNode(fromCountryToCountry));
-          mode = trip[i+1].mode
-          entry.appendChild(header);
-          entry.appendChild(brk);
-          entry.appendChild(document.createElement('br'));
-          entry.appendChild(document.createTextNode("Mode: " + mode));
-          entry.appendChild(brk);
-          entry.appendChild(document.createTextNode("Price (" + trip[i+1].year + "): " +"$" + trip[i+1].cost));
-          entry.appendChild(document.createElement('br'));
-          var showOlderPrices = document.createElement('button');
 
+          // Adds the main part of the trip entry
+          fromCountryToCountry = trip[i].city + ", " + trip[i].country + " to " + trip[i+1].city + ", " + trip[i+1].country;
+          mode = trip[i+1].mode
+          mostRecentPrice = "Price (" + trip[i+1].year + "): " +"$" + trip[i+1].cost;
+          entry = createItineraryEntryHTML(fromCountryToCountry, mode, mostRecentPrice);
           list.appendChild(entry);
 
+          // Adds the (hidden) older prices
           allYears = Object.keys(trip[i+1].previousYears).sort(function(a, b){return b-a});
+          olderPricesEntry = createOlderPricesEntryHTML(allYears, i);
+          entry.appendChild(olderPricesEntry);
 
-          var unorderedList = document.createElement('ul');
-          unorderedList.setAttribute("class", "olderPrices");
-          entry.appendChild(unorderedList);
-
-
-          for (var j = 0; j < allYears.length; j++) {
-            currYear = allYears[j];
-            currPrice = trip[i+1].previousYears[currYear];
-            if (currYear != trip[i+1].year) {
-              var entryTwo = document.createElement('li')
-              entryTwo.appendChild(document.createTextNode(currYear + ": $" + currPrice));
-              unorderedList.appendChild(entryTwo);
-            }
-          }
         }
 
+        // Adds total cost to the bottom of the list
         totalCost += trip[trip.length - 1].cost; // gets the last cost; might wanna change
         var totalCostP = document.createElement('p');
         totalCostP.appendChild(document.createTextNode("Total cost: $" + totalCost));
@@ -109,31 +93,63 @@
       }
     }
 
-    var selectStartCountry = function(startCountry) {
+    var createItineraryEntryHTML = function(fromCountryToCountry, mode, mostRecentPrice) {
+      var entry = document.createElement('div');
+      entry.setAttribute("id", "tripEntry");
+      var header = document.createElement('h3');
+      header.appendChild(document.createTextNode(fromCountryToCountry));
+      entry.appendChild(header);
+      entry.appendChild(document.createElement('br'));
+      entry.appendChild(document.createTextNode("Mode: " + mode));
+      entry.appendChild(document.createElement('br'));
+      entry.appendChild(document.createTextNode(mostRecentPrice));
+      entry.appendChild(document.createElement('br'));
 
+      return entry;
+    }
+
+    var createOlderPricesEntryHTML = function(allYears, i) {
+      var unorderedList = document.createElement('ul');
+      unorderedList.setAttribute("class", "olderPrices");
+      for (var j = 0; j < allYears.length; j++) {
+        currYear = allYears[j];
+        currPrice = trip[i+1].previousYears[currYear];
+        if (currYear != trip[i+1].year) {
+          var olderPrice = document.createElement('li')
+          olderPrice.appendChild(document.createTextNode(currYear + ": $" + currPrice));
+          unorderedList.appendChild(olderPrice);
+        }
+      }
+      if (allYears.length == 0) {
+        unorderedList.appendChild(document.createTextNode("No older prices available."))
+      }
+      return unorderedList;
+    }
+
+    var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
 
       if (currentlySelectedCountry != null && startCountry.state === 'grey') {
         return;
       }
 
+      // If you're selecting the very first country, set it as currentlySelectedCountry, find all possible end countries, and update map
       if (trip.length === 0) {
         currentlySelectedCountry = startCountry;
-        getStartCities(startCountry.name);
+        ajaxGetCitiesInACountry(startCountry.name);
       }
 
+      // If you're going forward in the trip, select the city and mode of transport
       if (startCountry.state === 'green') {
-        selectCityPopUp(startCountry);
+        startCities = Object.keys(startCountry.tripDetails);
+        selectCityPopUp(startCities, startCountry, false);
       }
 
+      // If you're going backward (deselecting), update the map accordingly
       if (startCountry.state === 'red') {
         backtrackedVars = backtrackOneStepAndUpdateStartCountry(startCountry);
         startCountry = backtrackedVars.startCountry;
         currentlySelectedCountry = backtrackedVars.currentlySelectedCountry;
-      }
-
-      if (currentlySelectedCountry) {
-        currentlySelectedCountry.removeHighlight();
       }
 
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
@@ -147,7 +163,7 @@
     var backtrackOneStepAndUpdateStartCountry = function(startCountry) {
         startCountry.removeHighlight();
         trip.pop();
-        drawTripLine();
+        updateTripLineMarkersAndItinerary();
         currentlySelectedCountry = null;
         if (trip.length > 0) {
           previousCountry = trip[trip.length - 1].country;
@@ -194,51 +210,28 @@
                 'fullTripInfo': fullTripInfo};
       }
 
-
-
-      // This is pretty repetitive with selectCityPopUp, should refactor
-    var selectStartCity = function(startCities, startCountry) {
+    var selectCityPopUp = function(startCities, startCountry, departureBool) {
       buttons = getCityButtons(startCities);
       swal({
         title: "Select City",
-        text: "Please select a departure city in " + startCountry + ":<br><br>" + buttons,
+        text: "Please select a city in " + startCountry.name + ":<br><br>" + buttons,
         html: true,
         showCancelButton: true,
-        closeOnCancel: true,
-        closeOnConfirm: true,
-        },
-        function(isConfirm) {
-          if (isConfirm) {
-            countries[startCountry].highlightRed();
-            selectedCity = $('input[name="city"]:checked').val();
-            trip.push({country: startCountry, city: selectedCity, cost: null});
-            ajaxQueryByStartCity(selectedCity, startCountry)
-          }
-          else {
-            countries[startCountry].removeHighlight();
-            forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-            startCountry = null;
-            currentlySelectedCountry = null;
-            return;
-          }
-        });
-    }
-
-    var selectCityPopUp = function(startCountry) {
-      cities = Object.keys(startCountry.tripDetails);
-      buttons = getCityButtons(cities);
-      swal({
-        title: "Select City",
-        text: "Please select a destination city in " + startCountry.name + ":<br><br>" + buttons,
-        html: true,
-        showCancelButton: true,
-        closeOnCancel: true,
-        closeOnConfirm: false,
+        closeOnCancel: true, 
+        closeOnConfirm: departureBool, // close if it's the first departure city, otherwise don't so that the transportation pop up shows up
         },
         function(isConfirm) {
           if (isConfirm) {
             selectedCity = $('input[name="city"]:checked').val();
-            selectTransportationPopUp(startCountry, getTransportationInfo(startCountry, selectedCity), selectedCity);
+            // if the very first departure city is what's being selected, push it to the trip and display the new end countries
+            if (departureBool){
+              startCountry.highlightRed();
+              trip.push({country: startCountry.name, city: selectedCity, cost: null});
+              ajaxQueryByStartCity(selectedCity, startCountry.name)
+            }
+            else {
+              selectTransportationPopUp(startCountry, getTransportationInfo(startCountry, selectedCity), selectedCity);
+            }
           }
           else {
             cancelPopUp(startCountry);
@@ -264,7 +257,7 @@
             countries[previousCountry].removeHighlight();
             mode = $('input[name="mode"]:checked').val();
             trip.push({country: startCountry.name, city: selectedCity, cost: fullTripInfo[mode]["cost"], mode: mode, year: fullTripInfo[mode]["year"], previousYears: fullTripInfo[mode].previousYears});
-            drawTripLine();
+            updateTripLineMarkersAndItinerary();
             ajaxQueryByStartCity(selectedCity, startCountry.name);
          //   noRoutesPopUp();
           }
@@ -277,22 +270,21 @@
     var cancelPopUp = function(startCountry) {
       startCountry.removeHighlight();
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-      startCountry = null;
       currentlySelectedCountry = null;
-      previousCountry = trip[trip.length - 1].country;
-      countries[previousCountry].highlightRed();
-      ajaxQueryByStartCity(trip[trip.length-1].city, trip[trip.length-1].country);
+      if (trip.length > 0) {
+        previousCountry = trip[trip.length - 1].country;
+        countries[previousCountry].highlightRed();
+        ajaxQueryByStartCity(trip[trip.length-1].city, trip[trip.length-1].country);
+      }
     }
 
     var ajaxQueryByStartCity= function(city, country) {
       if (country.indexOf(" ") > -1) {
         country = country.replace(/ /g, "-");
       }
-
       if (city.indexOf(" ") > -1) {
         city = city.replace(/ /g, "-");
       }
-
       $.ajax({
         type: 'GET',
         url: '/map/queryByStartCity/' + country + "/" + city,
@@ -304,7 +296,7 @@
       });
     }
 
-    var getStartCities = function(ajaxCallName) {
+    var ajaxGetCitiesInACountry = function(ajaxCallName) {
       var ajaxCallNameNoSpace = ajaxCallName;
       if (ajaxCallName.indexOf(" ") > -1) {
         ajaxCallNameNoSpace = ajaxCallName.replace(/ /g, "-");
@@ -316,7 +308,7 @@
         success: function(reply) {
           citiesJSON = JSON.parse(reply);
           cities = citiesJSON[ajaxCallName]
-          selectStartCity(cities, ajaxCallName);
+          selectCityPopUp(cities, countries[ajaxCallName], true);
         }
       });
     }
@@ -435,7 +427,6 @@
 
     this.clear = function() {
       removeTripMarkers();
-      uncheckBoxes();
       clearMap();
       resetMapVars();
     }
