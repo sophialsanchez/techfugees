@@ -214,6 +214,16 @@
                 'fullTripInfo': fullTripInfo};
       }
 
+    var noDataAvailablePopUp = function(startCountry) {
+      swal({
+        title: "Oops!",
+        text: "Looks like there are no data entries available for " + startCountry.name + ". Please select a different country.",
+      },
+      function(isConfirm) {
+        cancelPopUp;
+      })
+    }
+
     var selectCityPopUp = function(startCities, startCountry, departureBool) {
       buttons = getCityButtons(startCities);
       swal({
@@ -308,7 +318,12 @@
         success: function(reply) {
           citiesJSON = JSON.parse(reply);
           cities = citiesJSON[ajaxCallName]
-          selectCityPopUp(cities, countries[ajaxCallName], true);
+          if (cities.length === 0) {
+            noDataAvailablePopUp(countries[ajaxCallName]);
+          }
+          else {
+            selectCityPopUp(cities, countries[ajaxCallName], true);
+          }
         }
       });
     }
