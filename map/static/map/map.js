@@ -1,7 +1,6 @@
   function Map() {
     var leafletMap = L.map('map').setView([41.505, 25.00], 3);
     var countries = {};
-    var currentlySelectedCountry = null;
     var currentEndCountries = [];
     var trip = []
     var tripPolyline = null;
@@ -129,13 +128,12 @@
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
 
-      if (currentlySelectedCountry != null && startCountry.state === 'grey') {
+      if (trip.length > 0 && startCountry.state === 'grey') {
         return;
       }
 
-      // If you're selecting the very first country, set it as currentlySelectedCountry, find all possible end countries, and update map
+      // If you're selecting the very first country, find all possible end countries, and update map
       if (trip.length === 0) {
-        currentlySelectedCountry = startCountry;
         ajaxGetCitiesInACountry(startCountry.name);
       }
 
@@ -147,15 +145,12 @@
 
       // If you're going backward (deselecting), update the map accordingly
       if (startCountry.state === 'red') {
-        backtrackedVars = backtrackOneStepAndUpdateStartCountry(startCountry);
-        startCountry = backtrackedVars.startCountry;
-        currentlySelectedCountry = backtrackedVars.currentlySelectedCountry;
+        startCountry = backtrackOneStepAndUpdateStartCountry(startCountry);
       }
 
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
       if (startCountry && trip.length > 0) {
         startCountry.highlightRed();
-        currentlySelectedCountry = startCountry;
         ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
       }
     };
@@ -164,7 +159,6 @@
         startCountry.removeHighlight();
         trip.pop();
         updateTripLineMarkersAndItinerary();
-        currentlySelectedCountry = null;
         if (trip.length > 0) {
           previousCountry = trip[trip.length - 1].country;
           startCountry = countries[previousCountry];
@@ -173,7 +167,7 @@
           forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
           startCountry = null;
         }
-        return {'startCountry': startCountry, 'currentlySelectedCountry': currentlySelectedCountry};
+        return startCountry;
     }
 
     var getCityButtons = function(startCities) {
@@ -270,7 +264,6 @@
     var cancelPopUp = function(startCountry) {
       startCountry.removeHighlight();
       forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-      currentlySelectedCountry = null;
       if (trip.length > 0) {
         previousCountry = trip[trip.length - 1].country;
         countries[previousCountry].highlightRed();
@@ -405,18 +398,18 @@
     cacheCountries();
 
     var resetMapVars = function() {
-      currentlySelectedCountry = null;
       currentEndCountries = [];
       trip = []
       tripPolyline = null;
     }
 
     var clearMap = function() {
-      if (currentlySelectedCountry === null) {
+      if (trip == null) {
         return;
       }
       else {
-        currentlySelectedCountry.removeHighlight();
+        countryName = trip[trip.length-1].country;
+        countries[countryName].removeHighlight();
         forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
         if (this.tripPolyline != null) {
           leafletMap.removeLayer(this.tripPolyline);
