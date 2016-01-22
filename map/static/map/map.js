@@ -89,6 +89,7 @@
         var totalCostP = document.createElement('p');
         totalCostP.appendChild(document.createTextNode("Total cost: $" + totalCost));
         list.appendChild(totalCostP);
+        setPricesAsHiddenOrShown();
       }
     }
 
@@ -123,6 +124,15 @@
         unorderedList.appendChild(document.createTextNode("No older prices available."))
       }
       return unorderedList;
+    }
+
+    function setPricesAsHiddenOrShown() {
+      if ($('#showOlderPrices').is(':checked')) {
+        $(".olderPrices").show();
+      }
+      else {
+       $(".olderPrices").hide();
+      } 
     }
 
     var selectStartCountry = function(startCountry) {
@@ -401,7 +411,7 @@
     }
 
     var clearMap = function() {
-      if (trip == null) {
+      if (trip.length === 0) {
         return;
       }
       else {

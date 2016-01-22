@@ -33,5 +33,6 @@ $(function() {
       checkboxes[i].checked = false;
     }
   }
+
 });
 
