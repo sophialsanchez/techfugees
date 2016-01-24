@@ -105,7 +105,7 @@ ul {
 }
 
 
-#startOver, #endTrip {
+#startOver, #downloadCSV {
 	margin: 0px auto 0px auto;
 	background-color: #cccccc; 
 	border: none;
@@ -128,7 +128,7 @@ ul {
 
 }
 
-#startOver:hover, #endTrip:hover  {
+#startOver:hover, #downloadCSV:hover  {
   	background-image: -webkit-linear-gradient(top, #ffc700, #cc9e00);
   	background-image: -moz-linear-gradient(top, #ffc700, #cc9e00);
   	background-image: -ms-linear-gradient(top, #ffc700, #cc9e00);
@@ -137,7 +137,7 @@ ul {
   	text-decoration: none;
 }
 
-#startOver:active, #endTrip:active  {
+#startOver:active, #downloadCSV:active  {
 	background-image: -webkit-linear-gradient(top, #cc9e00, #997700);
   	background-image: -moz-linear-gradient(top, #cc9e00, #997700);
   	background-image: -ms-linear-gradient(top, #cc9e00, #997700);

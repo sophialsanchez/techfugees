@@ -1,9 +1,10 @@
 $(function() {
 
   myMap = new Map();
+  myCsv = new csv();
   instructionsAlert();
   $('#startOver').click(startOver)
-  $('#endTrip').click(endTrip)
+  $('#downloadCSV').click(downloadCSV)
   $('#showOlderPrices').click(function(){$(".olderPrices").toggle()});
 
   function instructionsAlert() {
@@ -20,10 +21,9 @@ $(function() {
     uncheckBoxes();
   }
 
-  function endTrip() {
-    swal({   title: "Mapping Smuggling Networks",   text: "You have ended your trip.",   type: "info",   confirmButtonText: "Got it!" });
-    myMap.clear();
-    uncheckBoxes();
+  function downloadCSV() {
+    swal({   title: "Download Itinerary",   text: "Your itinerary will download as a .csv.",   type: "info",   confirmButtonText: "Got it!" });
+    myCsv.downloadCSV(myMap.getTrip());
   }
 
   function uncheckBoxes()

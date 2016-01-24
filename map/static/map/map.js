@@ -289,15 +289,16 @@
     }
 
     var ajaxQueryByStartCity= function(city, country) {
+      countryNoSpace = country;
       if (country.indexOf(" ") > -1) {
-        country = country.replace(/ /g, "-");
+        countryNoSpace = country.replace(/ /g, "-");
       }
       if (city.indexOf(" ") > -1) {
         city = city.replace(/ /g, "-");
       }
       $.ajax({
         type: 'GET',
-        url: '/map/queryByStartCity/' + country + "/" + city,
+        url: '/map/queryByStartCity/' + countryNoSpace + "/" + city,
         success: function(reply) {
           endCountries = JSON.parse(reply);
           currentEndCountries = Object.keys(endCountries);
@@ -444,6 +445,10 @@
         }
         $("ul").empty();
       }
+    }
+
+    this.getTrip = function() {
+      return trip;
     }
 
     this.clear = function() {

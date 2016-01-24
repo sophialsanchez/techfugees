@@ -16,6 +16,7 @@
   var COUNTRIES_DATA_JSON_URL = "{% static 'map/ne-countries-50m.json' %}";
 </script>
 
+<script src="{% static 'map/csv.js' %}"></script>
 <script src="{% static 'map/main.js' %}"></script>
 <script src="{% static 'map/country.js' %}"></script>
 <script src="{% static 'map/map.js' %}"></script>
@@ -35,7 +36,7 @@
 			<input type="checkbox" id="showOlderPrices" />
 			<br>
 			<button class="mainButton" id='startOver'><b>Restart</button>
-			<button class="mainButton" id='endTrip'><b>End Trip</button>
+			<button class="mainButton" id='downloadCSV'><b>Download</button>
 		</div>
 		<div id="logodiv">
 			<img id="logo" src="{% static 'map/images/GITOC_logo.jpg' %}"></img>
@@ -45,12 +46,5 @@
 	<div id="map"></div>
 
 </div>
-
-
-
-
-
-
-
 
 
