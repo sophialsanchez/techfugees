@@ -16,7 +16,8 @@ def getCitiesInACountry(request, slug):
 	country = {}
 	cities = []
 	for trip in trips:
-		cities.append(trip.start)
+		if trip.start_country != trip.end_country:
+			cities.append(trip.start)
 	citiesSet = list(set(cities))
 	country[slug] = citiesSet
 	return HttpResponse(json.dumps(country))
