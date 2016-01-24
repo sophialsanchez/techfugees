@@ -138,30 +138,28 @@
     var selectStartCountry = function(startCountry) {
       if (!startCountry) { return; }
 
+      // You can't click on a country that's not red or green, if it's not the very first selection in the trip
       if (trip.length > 0 && startCountry.state === 'grey') {
         return;
       }
 
+      // If you're going backward (deselecting), update the map accordingly
+      else if (startCountry.state === 'red') {
+        startCountry = backtrackOneStepAndUpdateStartCountry(startCountry);
+      }
+
       // If you're selecting the very first country, find all possible end countries, and update map
-      if (trip.length === 0) {
+      else if (trip.length === 0) {
+        startCountry.highlightRed();
         ajaxGetCitiesInACountry(startCountry.name);
       }
 
       // If you're going forward in the trip, select the city and mode of transport
-      if (startCountry.state === 'green') {
+      else if (startCountry.state === 'green') {
+        forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
+        startCountry.highlightRed();
         startCities = Object.keys(startCountry.tripDetails);
         selectCityPopUp(startCities, startCountry, false);
-      }
-
-      // If you're going backward (deselecting), update the map accordingly
-      if (startCountry.state === 'red') {
-        startCountry = backtrackOneStepAndUpdateStartCountry(startCountry);
-      }
-
-      forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
-      if (startCountry && trip.length > 0) {
-        startCountry.highlightRed();
-        ajaxQueryByStartCity(trip[trip.length-1].city, startCountry.name);
       }
     };
 
@@ -169,12 +167,14 @@
         startCountry.removeHighlight();
         trip.pop();
         updateTripLineMarkersAndItinerary();
+        forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
         if (trip.length > 0) {
           previousCountry = trip[trip.length - 1].country;
           startCountry = countries[previousCountry];
+          startCountry.highlightRed();
+          ajaxQueryByStartCity(trip[trip.length - 1].city, trip[trip.length - 1].country);
         }
         else {
-          forEachCountry(currentEndCountries, function(country) { country.removeHighlight() });
           startCountry = null;
         }
 
@@ -217,7 +217,7 @@
     var noDataAvailablePopUp = function(startCountry) {
       swal({
         title: "Oops!",
-        text: "Looks like there are no data entries available for " + startCountry.name + ". Please select a different country.",
+        text: "Looks like there are no data entries available for " + startCountry.name + ". Please select a different country. If you have already started your journey, you can backtrack by clicking on the country again.",
       },
       function(isConfirm) {
         cancelPopUp;
@@ -301,7 +301,12 @@
         success: function(reply) {
           endCountries = JSON.parse(reply);
           currentEndCountries = Object.keys(endCountries);
-          forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
+          if (currentEndCountries.length === 0) {
+            noDataAvailablePopUp(countries[country]);
+          }
+          else {
+            forEachCountry(currentEndCountries, function(country) { country.highlightGreen(); country.setTripDetails(endCountries[country.name])});
+          }
         }
       });
     }
@@ -320,6 +325,7 @@
           cities = citiesJSON[ajaxCallName]
           if (cities.length === 0) {
             noDataAvailablePopUp(countries[ajaxCallName]);
+            backtrackOneStepAndUpdateStartCountry(countries[ajaxCallName]); // only want to do this because ajaxGetCitiesInACountry only called for very first country click
           }
           else {
             selectCityPopUp(cities, countries[ajaxCallName], true);
@@ -446,21 +452,3 @@
       resetMapVars();
     }
   };
-
-
-
-  //    var closeOnConfirmBoolFunc = function() {
-//    console.log(currentEndCountries);
-//      if (Object.keys(currentEndCountries).length === 0) {
-//        return false
-//      }
-//     else {
-//        return true
-//      };
-//    }
-
-//    var noRoutesPopUp = function() {
-//      if (Object.keys(currentEndCountries).length === 0) {
-//        swal({   title: "Mapping Smuggling Networks",   text: "No routes are available from this country. Click on the country in red to backtrack, or end your trip using the button on the left panel.",   type: "info",   confirmButtonText: "Got it!" });
-//      }
-//    }
