@@ -11,24 +11,31 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Choice',
+            name='Trip',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('choice_text', models.CharField(max_length=200)),
-                ('votes', models.IntegerField(default=0)),
+                ('start', models.CharField(max_length=200)),
+                ('start_country', models.CharField(max_length=200)),
+                ('start_lat', models.CharField(max_length=200)),
+                ('start_long', models.CharField(max_length=200)),
+                ('end', models.CharField(max_length=200)),
+                ('end_country', models.CharField(max_length=200)),
+                ('end_lat', models.CharField(max_length=200)),
+                ('end_long', models.CharField(max_length=200)),
+                ('year', models.CharField(max_length=200)),
+                ('price', models.CharField(max_length=200)),
+                ('lower_bound', models.CharField(max_length=200)),
+                ('upper_bound', models.CharField(max_length=200)),
+                ('ccy', models.CharField(max_length=200)),
+                ('USD_equiv', models.CharField(max_length=200)),
+                ('USD_equiv_avg', models.CharField(max_length=200)),
+                ('one_person', models.CharField(max_length=200)),
+                ('nationality_of_migrant', models.CharField(max_length=200)),
+                ('nationality_of_smuggler', models.CharField(max_length=200)),
+                ('service', models.CharField(max_length=200)),
+                ('via', models.CharField(max_length=200)),
+                ('source', models.CharField(max_length=10000)),
+                ('comment', models.CharField(max_length=10000)),
             ],
-        ),
-        migrations.CreateModel(
-            name='Question',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('question_text', models.CharField(max_length=200)),
-                ('pub_date', models.DateTimeField(verbose_name=b'date published')),
-            ],
-        ),
-        migrations.AddField(
-            model_name='choice',
-            name='question',
-            field=models.ForeignKey(to='map.Question'),
         ),
     ]

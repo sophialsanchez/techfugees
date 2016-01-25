@@ -22,8 +22,18 @@ $(function() {
   }
 
   function downloadCSV() {
-    swal({   title: "Download Itinerary",   text: "Your itinerary will download as a .csv.",   type: "info",   confirmButtonText: "Got it!" });
-    myCsv.downloadCSV(myMap.getTrip());
+    swal({
+      title: "Download Itinerary",
+      text: "Would you like to download your itinerary as a .csv?",
+      showCancelButton: true,
+      confirmButtonText: "Yes"
+    },
+    function(isConfirm) {
+      if (isConfirm) {
+        myCsv.downloadCSV(myMap.getTrip());
+      }
+    }
+    );
   }
 
   function uncheckBoxes()
