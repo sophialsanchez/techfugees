@@ -1,1 +1,1 @@
-web: gunicorn techfugees.wsgi --log-file -
+web: gunicorn techfugees.wsgi

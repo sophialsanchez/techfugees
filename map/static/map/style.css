@@ -1,9 +1,180 @@
+body {
+	padding: none;
+	margin: 0;
+	background-color: #614B79;
+}
 p {
-	color: green;
+	color: #00e600;
+	font-weight: bold;
+	font-size: 18px;
 }
 
 h1, h2 {
 	text-align: center;
+	font-family: 'Courier New';
+	color: white;
 }
 
-#map { height: 600px; width: 1000px;}
+h1 {
+	font-size: 40px;
+}
+
+h2 {
+	margin-top: 0px;
+	margin-bottom: 0px;
+}
+
+h3 {
+	color: white;
+	font-style: bold;
+	margin: 0px;
+}
+
+
+label {
+	color: white;
+	font-family: 'Courier New';
+}
+
+#itinerary {
+	overflow: auto;
+	height: 100%;
+	position: absolute;
+	width: 24.9%;
+	-webkit-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+	-moz-box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+	box-shadow: inset -6px -1px 23px -3px rgba(0,0,0,0.50);
+}
+
+#listOfTripLegs {
+   width: 100%;
+   position: absolute;
+   top: 67px;			/* TO DO: this absolute positioning is kind of cheating. Fix it. */
+   bottom: 170px;
+   overflow-y: auto;
+   overflow-x: hidden;
+}
+
+.olderPrices {
+	color: #b3b3b3;
+}
+
+ul {
+	list-style:none;
+    padding-left:0px;
+    margin: 0px;
+}
+
+#map {
+	height: 100%;
+	width: 75%;
+	float: right;
+	padding: none;
+	margin: none;
+}
+
+.sweet-alert .visibleInput{
+    display: inline-block;
+    height: auto;
+    width: auto;
+    margin: auto;
+}
+
+#logo {
+	width: auto;
+	position: absolute;
+	height: 70px;
+	padding: 0;
+	bottom: 10px;
+	left: 0;
+}
+
+#logodiv {
+	position:absolute;
+	bottom: 0;
+}
+
+#buttons {
+	padding-top: 10px;
+	margin: 0px;
+	text-align: center;
+	position: absolute;
+	bottom: 93px;
+	left: 0;
+	right: 0;
+}
+
+
+#startOver, #downloadCSV {
+	margin: 0px auto 0px auto;
+	background-color: #cccccc; 
+	border: none;
+	text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-family: 'Courier New';
+    padding: 10px 10px;
+     -moz-border-radius: 15px;
+ 	 -webkit-border-radius: 15px;
+  	border: 5px solid #614B79;
+  	outline: none;
+
+   	background-image: -webkit-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: -moz-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: -ms-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: -o-linear-gradient(top, #cccccc, #b3b1b3);
+  	background-image: linear-gradient(to bottom, #cccccc, #b3b1b3);
+
+}
+
+#startOver:hover, #downloadCSV:hover  {
+  	background-image: -webkit-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: -moz-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: -ms-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: -o-linear-gradient(top, #ffc700, #cc9e00);
+  	background-image: linear-gradient(to bottom, #ffc700, #cc9e00);
+  	text-decoration: none;
+}
+
+#startOver:active, #downloadCSV:active  {
+	background-image: -webkit-linear-gradient(top, #cc9e00, #997700);
+  	background-image: -moz-linear-gradient(top, #cc9e00, #997700);
+  	background-image: -ms-linear-gradient(top, #cc9e00, #997700);
+  	background-image: -o-linear-gradient(top, #cc9e00, #997700);
+  	background-image: linear-gradient(to bottom, #cc9e00, #997700);
+  	text-decoration: none;
+}
+
+#tripEntry {
+	width: auto;
+	-webkit-box-shadow: inset -1px -1px 62px -8px rgba(0,0,0,0.48);
+	-moz-box-shadow: inset -1px -1px 62px -8px rgba(0,0,0,0.48);
+	box-shadow: inset -1px -1px 62px -8px rgba(0,0,0,0.48);
+	padding: 10px;
+}
+
+#itineraryTitle {
+	padding-top: 20px;
+	padding-bottom: 20px;
+	background-color: #3f314f;
+}
+
+#itineraryList {
+	color: white;
+	font-size: 16px;
+	font-family: 'Courier New';
+	list-style-type: none;
+}
+
+#itinerary, #map {
+	display:inline;
+	text-align: center;
+}
+
+#container {
+	position: relative;
+	overflow: auto;
+}
+
+

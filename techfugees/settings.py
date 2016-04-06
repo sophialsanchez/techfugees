@@ -26,6 +26,7 @@ SECRET_KEY = '_!ublgokh)*ipt$mp7ttxfrkmzqt#s^f^o+(=7-n+&1=$n5p%g'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# allow all
 ALLOWED_HOSTS = []
 
 
@@ -83,16 +84,16 @@ if 'DATABASE_URL' in os.environ:
   DATABASES['default']['ENGINE'] = 'django_postgrespool'
 else:
   DATABASES = {
-      'default': {
-          'ENGINE': 'django.db.backends.postgresql_psycopg2',
-          'NAME': 'techfugees_db',
-          'USER': os.environ['USER'],
-          'PASSWORD': 'wiinner24',
-          'HOST':  'localhost',
-          'PORT': '5432',
-      }
-  }
 
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'techfugees_db',
+        'USER': os.environ['USER'],
+        'PASSWORD': 'wiinner24',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
