@@ -1,6 +1,9 @@
 # python cruft
 *.pyc
+.idea/
+*/.DS_Store
 
 # venv-related files
 /venv/
+/env/
 /activate

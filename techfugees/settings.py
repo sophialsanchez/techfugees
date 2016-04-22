@@ -120,3 +120,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'map/static'),
 )
+
+GOOGLE_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/1xNZLy3msiWZQ-O6wDwmdi9JqCWb-0E-RBV5B1FFXQMs/edit?ts=56cef28f#gid=1497125393'
+GOOGLE_JSON_CREDENTIALS = 'techfugees/Techfugees-68e8569c551b.json'

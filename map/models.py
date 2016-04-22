@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Trip(models.Model):
     start = models.CharField(max_length=200)
     start_country = models.CharField(max_length=200)
